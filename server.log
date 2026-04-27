@@ -1,0 +1,295 @@
+2026-04-27 19:30:50.475 ##########################################################################
+
+2026-04-27 19:30:50.475 ############################ TAIJI JOB START #############################
+
+2026-04-27 19:30:50.475 ##########################################################################
+
+2026-04-27 19:30:50.493 cp: cannot stat './/*': No such file or directory
+
+2026-04-27 19:30:50.503 passwd: password expiry information changed.
+
+2026-04-27 19:30:57.203 Complete setting taiji user.
+
+2026-04-27 19:31:03.180 update taiji environ ...
+
+2026-04-27 19:31:03.180 show args: --appName=95d1b1c49dca22ef019dceb4acd507e0 --projectName=external-ams-competition-2025 --module=pytorch --script=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/run.sh --script_archive=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/utils.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/trainer.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/train.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/ns_groups.json,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/model.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/dataset.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/.taiji_run.json --script_args=
+
+2026-04-27 19:31:03.273 INFO: ===begin to run init cmd===
+
+2026-04-27 19:31:03.273 INFO: Export env: RUNTIME_SCRIPT_DIR=/home/taiji/dl/runtime/script
+
+2026-04-27 19:31:03.281 INFO: Export env: RUNTIME_SCRIPT_SHARE_DIR=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/95d1b1c49dca22ef019dceb4acd507e0/pipeline/95d1b1c49dca22ef019dceb4acd507e0/share
+
+2026-04-27 19:31:03.281 INFO: script_path :/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/run.sh
+
+2026-04-27 19:31:03.293 INFO: Success copy to /home/taiji/dl/runtime/script/run.sh
+
+2026-04-27 19:31:03.302 INFO: Success copy to /home/taiji/dl/runtime/script/utils.py
+
+2026-04-27 19:31:03.307 INFO: Success copy to /home/taiji/dl/runtime/script/trainer.py
+
+2026-04-27 19:31:03.313 INFO: Success copy to /home/taiji/dl/runtime/script/train.py
+
+2026-04-27 19:31:03.317 INFO: Success copy to /home/taiji/dl/runtime/script/ns_groups.json
+
+2026-04-27 19:31:03.322 INFO: Success copy to /home/taiji/dl/runtime/script/model.py
+
+2026-04-27 19:31:03.333 INFO: Success copy to /home/taiji/dl/runtime/script/dataset.py
+
+2026-04-27 19:31:03.343 INFO: Success copy to /home/taiji/dl/runtime/script/.taiji_run.json
+
+2026-04-27 19:31:03.343 INFO: python path: /home/taiji/dl/runtime/script/utils.py:/home/taiji/dl/runtime/script/trainer.py:/home/taiji/dl/runtime/script/train.py:/home/taiji/dl/runtime/script/ns_groups.json:/home/taiji/dl/runtime/script/model.py:/home/taiji/dl/runtime/script/dataset.py:/home/taiji/dl/runtime/script/.taiji_run.json
+
+2026-04-27 19:31:03.343 INFO: Export env: TRAIN_CKPT_PATH=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/95d1b1c49dca22ef019dceb4acd507e0/ckpt
+
+2026-04-27 19:31:03.343 INFO: Export env: TRAIN_TF_EVENTS_PATH=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/95d1b1c49dca22ef019dceb4acd507e0/events
+
+2026-04-27 19:31:03.343 INFO: Export env: TRAIN_DATA_PATH=/data_ams/academic_training_data
+
+2026-04-27 19:31:03.343 INFO: Export env: TRAIN_USER=ams_2026_1029735554728158628
+
+2026-04-27 19:31:03.343 INFO: Export env: TRAIN_LOG_PATH=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/95d1b1c49dca22ef019dceb4acd507e0/log
+
+2026-04-27 19:31:03.343 INFO: Export env: TRAIN_CACHE_PATH=/apdcephfs_fsgm2/share_305170765/angel/groups/95/ams_2026_1029735554728158628
+
+2026-04-27 19:31:03.343 INFO: Export env: USER_CACHE_PATH=/apdcephfs_fsgm2/share_305170765/angel/groups/95/ams_2026_1029735554728158628
+
+2026-04-27 19:31:03.343 INFO: Export env: NP_BD_FLOW_PROJ=7857881
+
+2026-04-27 19:31:03.353 touch: cannot touch '/data/initCmdCompletedFile': No such file or directory
+
+2026-04-27 19:31:03.353 initCmd failed
+
+2026-04-27 19:31:03.354 [TAIJI] Starting sshd
+
+2026-04-27 19:31:04.379 [TAIJI] sshd started
+
+2026-04-27 19:31:04.379 [TAIJI] waiting for all peers to be ready...
+
+2026-04-27 19:31:05.916 Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.4.241-1-tlinux4-0017.7 x86_64)
+
+2026-04-27 19:31:05.916
+
+2026-04-27 19:31:05.916 * Documentation: https://help.ubuntu.com
+
+2026-04-27 19:31:05.916 * Management: https://landscape.canonical.com
+
+2026-04-27 19:31:05.916 * Support: https://ubuntu.com/pro
+
+2026-04-27 19:31:05.916
+
+2026-04-27 19:31:05.916 This system has been minimized by removing packages and content that are
+
+2026-04-27 19:31:05.916 not required on a system that users do not log into.
+
+2026-04-27 19:31:05.916
+
+2026-04-27 19:31:05.916 To restore this content, you can run the 'unminimize' command.
+
+2026-04-27 19:31:05.916
+
+2026-04-27 19:31:05.916 The programs included with the Ubuntu system are free software;
+
+2026-04-27 19:31:05.916 the exact distribution terms for each program are described in the
+
+2026-04-27 19:31:05.916 individual files in /usr/share/doc/*/copyright.
+
+2026-04-27 19:31:05.916
+
+2026-04-27 19:31:05.916 Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+
+2026-04-27 19:31:05.916 applicable law.
+
+2026-04-27 19:31:05.916
+
+2026-04-27 19:31:07.374 [TAIJI] error log above can be ignored
+
+2026-04-27 19:31:07.379 [TAIJI] run command 1777289467 [/bin/bash -c "${start_script}"]
+
+2026-04-27 19:31:11.417 Complete setting network policy rules.
+
+2026-04-27 19:31:17.608 update taiji environ ...
+
+2026-04-27 19:31:17.608 show args: --appName=95d1b1c49dca22ef019dceb4acd507e0 --projectName=external-ams-competition-2025n --module=pytorch --script=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/run.sh --script_archive=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/utils.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/trainer.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/train.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/ns_groups.json,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/model.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/dataset.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/.taiji_run.json --script_args=
+
+2026-04-27 19:31:17.652 INFO: ===begin to run starttorch cmd===
+
+2026-04-27 19:31:17.652 INFO: runtime_script_share_dir is /apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/95d1b1c49dca22ef019dceb4acd507e0/pipeline/95d1b1c49dca22ef019dceb4acd507e0/share
+
+2026-04-27 19:31:17.652 INFO: script_path :/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/scripts/95d1b1c49dca22ef019dceb4acd507e0/run.sh
+
+2026-04-27 19:31:17.652 INFO: framework is pytorch
+
+2026-04-27 19:31:17.652 INFO: Run command: bash /home/taiji/dl/runtime/script/run.sh
+
+2026-04-27 19:31:17.652 INFO: ====== Begin cmd ======
+
+2026-04-27 19:31:19.256 [DEBUG][libvgpu]hijack_call.c:106 [p:275 t:275]init cuda hook lib
+
+2026-04-27 19:31:19.256 [DEBUG][libvgpu]hijack_call.c:107 [p:275 t:275]Thread pid:275, tid:275
+
+2026-04-27 19:31:19.256 [DEBUG][libvgpu]hijack_call.c:125 [p:275 t:275]env_ld_library_path: /usr/local/cuda/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+2026-04-27 19:31:19.260 [DEBUG][libvgpu]hijack_call.c:172 [p:275 t:275]hooked env NCCL_SET_THREAD_NAME to : 1
+
+2026-04-27 19:31:19.260 [DEBUG][libvgpu]hijack_call.c:173 [p:275 t:275]hooked LD_LIBRARY_PATH to : /usr/local/cuda/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+2026-04-27 19:31:19.260 [DEBUG][libvgpu]hijack_call.c:174 [p:275 t:275]hooked libnvml_realpath to : /lib/x86_64-linux-gnu/libnvidia-ml.so.1
+
+2026-04-27 19:31:19.260 [DEBUG][libvgpu]hijack_call.c:175 [p:275 t:275]hooked libcuda_realpath to : /lib/x86_64-linux-gnu/libcuda.so.1
+
+2026-04-27 19:31:23.351 04/27/26 19:31:23 - 0:00:00 - Args: {'data_dir': '/data_ams/academic_training_data', 'schema_path': None, 'ckpt_dir': '/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/95d1b1c49dca22ef019dceb4acd507e0/ckpt', 'log_dir': '/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/95d1b1c49dca22ef019dceb4acd507e0/log', 'batch_size': 256, 'lr': 0.0001, 'num_epochs': 1, 'patience': 5, 'seed': 42, 'device': 'cuda', 'num_workers': 8, 'buffer_batches': 20, 'train_ratio': 1.0, 'valid_ratio': 0.1, 'eval_every_n_steps': 0, 'seq_max_lens': 'seq_a:256,seq_b:256,seq_c:512,seq_d:512', 'd_model': 64, 'emb_dim': 64, 'num_queries': 2, 'num_hyformer_blocks': 2, 'num_heads': 4, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'use_time_buckets': True, 'rank_mixer_mode': 'full', 'use_rope': False, 'rope_base': 10000.0, 'loss_type': 'bce', 'focal_alpha': 0.1, 'focal_gamma': 2.0, 'sparse_lr': 0.05, 'sparse_weight_decay': 0.0, 'reinit_sparse_after_epoch': 1, 'reinit_cardinality_threshold': 0, 'emb_skip_threshold': 1000000, 'seq_id_threshold': 10000, 'ns_groups_json': '', 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 5, 'item_ns_tokens': 2, 'tf_events_dir': '/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260427193036_8097ea91/95d1b1c49dca22ef019dceb4acd507e0/events'}
+
+2026-04-27 19:31:23.786 2026-04-27 19:31:23.786038: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+
+2026-04-27 19:31:23.797 2026-04-27 19:31:23.797421: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+
+2026-04-27 19:31:23.809 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+
+2026-04-27 19:31:23.809 E0000 00:00:1777289483.809714 271 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+
+2026-04-27 19:31:23.813 E0000 00:00:1777289483.813068 271 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+
+2026-04-27 19:31:23.821 W0000 00:00:1777289483.821922 271 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+
+2026-04-27 19:31:23.821 W0000 00:00:1777289483.821934 271 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+
+2026-04-27 19:31:23.821 W0000 00:00:1777289483.821935 271 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+
+2026-04-27 19:31:23.821 W0000 00:00:1777289483.821937 271 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+
+2026-04-27 19:31:23.824 2026-04-27 19:31:23.824699: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+
+2026-04-27 19:31:23.824 To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+2026-04-27 19:31:27.804 04/27/26 19:31:27 - 0:00:04 - generated new fontManager
+
+2026-04-27 19:31:28.218 04/27/26 19:31:28 - 0:00:05 - === Data profile begin ===
+
+2026-04-27 19:31:28.218 04/27/26 19:31:28 - 0:00:05 - data_dir=/data_ams/academic_training_data, exists=True
+
+2026-04-27 19:31:28.218 04/27/26 19:31:28 - 0:00:05 - schema_path=/data_ams/academic_training_data/schema.json, exists=True
+
+2026-04-27 19:31:28.219 04/27/26 19:31:28 - 0:00:05 - data_dir first entries (30 shown): ['_SUCCESS', 'part-00000-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00001-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00002-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00003-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00004-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00005-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00006-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00007-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00008-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00009-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00010-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00011-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00012-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00013-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00014-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00015-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00016-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00017-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00018-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00019-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00020-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00021-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00022-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00023-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00024-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00025-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00026-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00027-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00028-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet']
+
+2026-04-27 19:31:28.219 04/27/26 19:31:28 - 0:00:05 - schema counts: user_int=46, item_int=14, user_dense=10, seq_domains=['seq_a', 'seq_b', 'seq_c', 'seq_d']
+
+2026-04-27 19:31:28.219 04/27/26 19:31:28 - 0:00:05 - user_int vocab summary: count=46, min=3, max=2848, unique=26
+
+2026-04-27 19:31:28.219 04/27/26 19:31:28 - 0:00:05 - item_int vocab summary: count=14, min=3, max=23700, unique=13
+
+2026-04-27 19:31:28.219 04/27/26 19:31:28 - 0:00:05 - seq[seq_a]: prefix=domain_a_seq, ts_fid=39, features=9, vocab_summary=count=9, min=0, max=745286, unique=9
+
+2026-04-27 19:31:28.219 04/27/26 19:31:28 - 0:00:05 - seq[seq_b]: prefix=domain_b_seq, ts_fid=67, features=14, vocab_summary=count=14, min=0, max=64710562, unique=14
+
+2026-04-27 19:31:28.219 04/27/26 19:31:28 - 0:00:05 - seq[seq_c]: prefix=domain_c_seq, ts_fid=27, features=12, vocab_summary=count=12, min=0, max=86335515, unique=12
+
+2026-04-27 19:31:28.220 04/27/26 19:31:28 - 0:00:05 - seq[seq_d]: prefix=domain_d_seq, ts_fid=26, features=10, vocab_summary=count=10, min=0, max=606041, unique=10
+
+2026-04-27 19:31:28.221 04/27/26 19:31:28 - 0:00:05 - parquet file count=1000
+
+2026-04-27 19:31:28.700 04/27/26 19:31:28 - 0:00:05 - parquet total rows=1010000, total row_groups=1000
+
+2026-04-27 19:31:28.701 04/27/26 19:31:28 - 0:00:05 - first parquet: name=part-00000-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet, rows=1030, row_groups=1, columns=120
+
+2026-04-27 19:31:28.701 04/27/26 19:31:28 - 0:00:05 - first parquet columns: ['user_id', 'item_id', 'label_type', 'label_time', 'timestamp', 'user_int_feats_1', 'user_int_feats_3', 'user_int_feats_4', 'user_int_feats_15', 'user_int_feats_48', 'user_int_feats_49', 'user_int_feats_50', 'user_int_feats_51', 'user_int_feats_52', 'user_int_feats_53', 'user_int_feats_54', 'user_int_feats_55', 'user_int_feats_56', 'user_int_feats_57', 'user_int_feats_58', 'user_int_feats_59', 'user_int_feats_60', 'user_int_feats_62', 'user_int_feats_63', 'user_int_feats_64', 'user_int_feats_65', 'user_int_feats_66', 'user_int_feats_80', 'user_int_feats_82', 'user_int_feats_86', 'user_int_feats_89', 'user_int_feats_90', 'user_int_feats_91', 'user_int_feats_92', 'user_int_feats_93', 'user_int_feats_94', 'user_int_feats_95', 'user_int_feats_96', 'user_int_feats_97', 'user_int_feats_98', 'user_int_feats_99', 'user_int_feats_100', 'user_int_feats_101', 'user_int_feats_102', 'user_int_feats_103', 'user_int_feats_104', 'user_int_feats_105', 'user_int_feats_106', 'user_int_feats_107', 'user_int_feats_108', 'user_int_feats_109', 'user_dense_feats_61', 'user_dense_feats_62', 'user_dense_feats_63', 'user_dense_feats_64', 'user_dense_feats_65', 'user_dense_feats_66', 'user_dense_feats_87', 'user_dense_feats_89', 'user_dense_feats_90', 'user_dense_feats_91', 'item_int_feats_5', 'item_int_feats_6', 'item_int_feats_7', 'item_int_feats_8', 'item_int_feats_9', 'item_int_feats_10', 'item_int_feats_11', 'item_int_feats_12', 'item_int_feats_13', 'item_int_feats_16', 'item_int_feats_81', 'item_int_feats_83', 'item_int_feats_84', 'item_int_feats_85', 'domain_a_seq_38', 'domain_a_seq_39', 'domain_a_seq_40', 'domain_a_seq_41', 'domain_a_seq_42', 'domain_a_seq_43', 'domain_a_seq_44', 'domain_a_seq_45', 'domain_a_seq_46', 'domain_b_seq_67', 'domain_b_seq_68', 'domain_b_seq_69', 'domain_b_seq_70', 'domain_b_seq_71', 'domain_b_seq_72', 'domain_b_seq_73', 'domain_b_seq_74', 'domain_b_seq_75', 'domain_b_seq_76', 'domain_b_seq_77', 'domain_b_seq_78', 'domain_b_seq_79', 'domain_b_seq_88', 'domain_c_seq_27', 'domain_c_seq_28', 'domain_c_seq_29', 'domain_c_seq_30', 'domain_c_seq_31', 'domain_c_seq_32', 'domain_c_seq_33', 'domain_c_seq_34', 'domain_c_seq_35', 'domain_c_seq_36', 'domain_c_seq_37', 'domain_c_seq_47', 'domain_d_seq_17', 'domain_d_seq_18', 'domain_d_seq_19', 'domain_d_seq_20', 'domain_d_seq_21', 'domain_d_seq_22', 'domain_d_seq_23', 'domain_d_seq_24', 'domain_d_seq_25', 'domain_d_seq_26']
+
+2026-04-27 19:31:28.702 04/27/26 19:31:28 - 0:00:05 - first parquet types: [('user_id', 'int64'), ('item_id', 'int64'), ('label_type', 'int32'), ('label_time', 'int64'), ('timestamp', 'int64'), ('user_int_feats_1', 'int64'), ('user_int_feats_3', 'int64'), ('user_int_feats_4', 'int64'), ('user_int_feats_15', 'list<element: int64 not null>'), ('user_int_feats_48', 'int64'), ('user_int_feats_49', 'int64'), ('user_int_feats_50', 'int64'), ('user_int_feats_51', 'int64'), ('user_int_feats_52', 'int64'), ('user_int_feats_53', 'int64'), ('user_int_feats_54', 'int64'), ('user_int_feats_55', 'int64'), ('user_int_feats_56', 'int64'), ('user_int_feats_57', 'int64'), ('user_int_feats_58', 'int64'), ('user_int_feats_59', 'int64'), ('user_int_feats_60', 'list<element: int64 not null>'), ('user_int_feats_62', 'list<element: int64 not null>'), ('user_int_feats_63', 'list<element: int64 not null>'), ('user_int_feats_64', 'list<element: int64 not null>'), ('user_int_feats_65', 'list<element: int64 not null>'), ('user_int_feats_66', 'list<element: int64 not null>'), ('user_int_feats_80', 'list<element: int64 not null>'), ('user_int_feats_82', 'int64'), ('user_int_feats_86', 'int64'), ('user_int_feats_89', 'list<element: int64 not null>'), ('user_int_feats_90', 'list<element: int64 not null>'), ('user_int_feats_91', 'list<element: int64 not null>'), ('user_int_feats_92', 'int64'), ('user_int_feats_93', 'int64'), ('user_int_feats_94', 'int64'), ('user_int_feats_95', 'int64'), ('user_int_feats_96', 'int64'), ('user_int_feats_97', 'int64'), ('user_int_feats_98', 'int64'), ('user_int_feats_99', 'int64'), ('user_int_feats_100', 'int64'), ('user_int_feats_101', 'int64'), ('user_int_feats_102', 'int64'), ('user_int_feats_103', 'int64'), ('user_int_feats_104', 'int64'), ('user_int_feats_105', 'int64'), ('user_int_feats_106', 'int64'), ('user_int_feats_107', 'int64'), ('user_int_feats_108', 'int64'), ('user_int_feats_109', 'int64'), ('user_dense_feats_61', 'list<element: float not null>'), ('user_dense_feats_62', 'list<element: float not null>'), ('user_dense_feats_63', 'list<element: float not null>'), ('user_dense_feats_64', 'list<element: float not null>'), ('user_dense_feats_65', 'list<element: float not null>'), ('user_dense_feats_66', 'list<element: float not null>'), ('user_dense_feats_87', 'list<element: float not null>'), ('user_dense_feats_89', 'list<element: float not null>'), ('user_dense_feats_90', 'list<element: float not null>'), ('user_dense_feats_91', 'list<element: float not null>'), ('item_int_feats_5', 'int64'), ('item_int_feats_6', 'int64'), ('item_int_feats_7', 'int64'), ('item_int_feats_8', 'int64'), ('item_int_feats_9', 'int64'), ('item_int_feats_10', 'int64'), ('item_int_feats_11', 'list<element: int64 not null>'), ('item_int_feats_12', 'int64'), ('item_int_feats_13', 'int64'), ('item_int_feats_16', 'int64'), ('item_int_feats_81', 'int64'), ('item_int_feats_83', 'int64'), ('item_int_feats_84', 'int64'), ('item_int_feats_85', 'int64'), ('domain_a_seq_38', 'list<element: int64 not null>'), ('domain_a_seq_39', 'list<element: int64 not null>'), ('domain_a_seq_40', 'list<element: int64 not null>'), ('domain_a_seq_41', 'list<element: int64 not null>'), ('domain_a_seq_42', 'list<element: int64 not null>'), ('domain_a_seq_43', 'list<element: int64 not null>'), ('domain_a_seq_44', 'list<element: int64 not null>'), ('domain_a_seq_45', 'list<element: int64 not null>'), ('domain_a_seq_46', 'list<element: int64 not null>'), ('domain_b_seq_67', 'list<element: int64 not null>'), ('domain_b_seq_68', 'list<element: int64 not null>'), ('domain_b_seq_69', 'list<element: int64 not null>'), ('domain_b_seq_70', 'list<element: int64 not null>'), ('domain_b_seq_71', 'list<element: int64 not null>'), ('domain_b_seq_72', 'list<element: int64 not null>'), ('domain_b_seq_73', 'list<element: int64 not null>'), ('domain_b_seq_74', 'list<element: int64 not null>'), ('domain_b_seq_75', 'list<element: int64 not null>'), ('domain_b_seq_76', 'list<element: int64 not null>'), ('domain_b_seq_77', 'list<element: int64 not null>'), ('domain_b_seq_78', 'list<element: int64 not null>'), ('domain_b_seq_79', 'list<element: int64 not null>'), ('domain_b_seq_88', 'list<element: int64 not null>'), ('domain_c_seq_27', 'list<element: int64 not null>'), ('domain_c_seq_28', 'list<element: int64 not null>'), ('domain_c_seq_29', 'list<element: int64 not null>'), ('domain_c_seq_30', 'list<element: int64 not null>'), ('domain_c_seq_31', 'list<element: int64 not null>'), ('domain_c_seq_32', 'list<element: int64 not null>'), ('domain_c_seq_33', 'list<element: int64 not null>'), ('domain_c_seq_34', 'list<element: int64 not null>'), ('domain_c_seq_35', 'list<element: int64 not null>'), ('domain_c_seq_36', 'list<element: int64 not null>'), ('domain_c_seq_37', 'list<element: int64 not null>'), ('domain_c_seq_47', 'list<element: int64 not null>'), ('domain_d_seq_17', 'list<element: int64 not null>'), ('domain_d_seq_18', 'list<element: int64 not null>'), ('domain_d_seq_19', 'list<element: int64 not null>'), ('domain_d_seq_20', 'list<element: int64 not null>'), ('domain_d_seq_21', 'list<element: int64 not null>'), ('domain_d_seq_22', 'list<element: int64 not null>'), ('domain_d_seq_23', 'list<element: int64 not null>'), ('domain_d_seq_24', 'list<element: int64 not null>'), ('domain_d_seq_25', 'list<element: int64 not null>'), ('domain_d_seq_26', 'list<element: int64 not null>')]
+
+2026-04-27 19:31:28.702 04/27/26 19:31:28 - 0:00:05 - === Data profile end ===
+
+2026-04-27 19:31:28.702 04/27/26 19:31:28 - 0:00:05 - Seq max_lens override: {'seq_a': 256, 'seq_b': 256, 'seq_c': 512, 'seq_d': 512}
+
+2026-04-27 19:31:28.702 04/27/26 19:31:28 - 0:00:05 - Using Parquet data format (IterableDataset)
+
+2026-04-27 19:31:29.195 04/27/26 19:31:29 - 0:00:06 - Row Group split: 900 train (907381 rows), 100 valid (102619 rows)
+
+2026-04-27 19:31:29.687 04/27/26 19:31:29 - 0:00:06 - PCVRParquetDataset: 907381 rows from 1000 file(s), batch_size=256, buffer_batches=20, shuffle=True
+
+2026-04-27 19:31:30.182 04/27/26 19:31:30 - 0:00:07 - PCVRParquetDataset: 102619 rows from 1000 file(s), batch_size=256, buffer_batches=0, shuffle=False
+
+2026-04-27 19:31:30.182 04/27/26 19:31:30 - 0:00:07 - Parquet train: 907381 rows, valid: 102619 rows, batch_size=256, buffer_batches=20
+
+2026-04-27 19:31:30.183 04/27/26 19:31:30 - 0:00:07 - No NS groups JSON found, using default: each feature as one group
+
+2026-04-27 19:31:30.207 04/27/26 19:31:30 - 0:00:07 - RankMixerNSTokenizer: 46 fids, total_emb_dim=2944, chunk_dim=589, num_ns_tokens=5, pad=1
+
+2026-04-27 19:31:30.225 04/27/26 19:31:30 - 0:00:07 - RankMixerNSTokenizer: 14 fids, total_emb_dim=896, chunk_dim=448, num_ns_tokens=2, pad=0
+
+2026-04-27 19:31:32.317 04/27/26 19:31:32 - 0:00:09 - emb_skip_threshold=1000000: seq_b skipped 1/13 features
+
+2026-04-27 19:31:32.317 04/27/26 19:31:32 - 0:00:09 - emb_skip_threshold=1000000: seq_c skipped 3/11 features
+
+2026-04-27 19:31:33.629 04/27/26 19:31:33 - 0:00:10 - PCVRHyFormer model created: num_ns=8, T=16, d_model=64, rank_mixer_mode=full
+
+2026-04-27 19:31:33.629 04/27/26 19:31:33 - 0:00:10 - User NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19], [20], [21], [22], [23], [24], [25], [26], [27], [28], [29], [30], [31], [32], [33], [34], [35], [36], [37], [38], [39], [40], [41], [42], [43], [44], [45]]
+
+2026-04-27 19:31:33.629 04/27/26 19:31:33 - 0:00:10 - Item NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13]]
+
+2026-04-27 19:31:33.630 04/27/26 19:31:33 - 0:00:10 - Total parameters: 239,931,649
+
+2026-04-27 19:31:33.633 04/27/26 19:31:33 - 0:00:10 - Sparse params: 98 tensors, 237,435,776 parameters (Adagrad lr=0.05)
+
+2026-04-27 19:31:33.633 04/27/26 19:31:33 - 0:00:10 - Dense params: 380 tensors, 2,495,873 parameters (AdamW lr=0.0001)
+
+2026-04-27 19:31:36.408 Start training (PCVRHyFormer)
+
+2026-04-27 19:31:36.408 04/27/26 19:31:36 - 0:00:13 - PCVRHyFormerRankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=1
+
+2026-04-27 19:31:42.528 0%| | 0/3733 [00:00<?, ?it/s] 0%| | 0/3733 [00:06<?, ?it/s]
+
+2026-04-27 19:31:42.528 Traceback (most recent call last):
+
+2026-04-27 19:31:42.528 File "/home/taiji/dl/runtime/script/train.py", line 442, in <module>
+
+2026-04-27 19:31:42.529 main()
+
+2026-04-27 19:31:42.529 File "/home/taiji/dl/runtime/script/train.py", line 435, in main
+
+2026-04-27 19:31:42.529 trainer.train()
+
+2026-04-27 19:31:42.529 File "/home/taiji/dl/runtime/script/trainer.py", line 304, in train
+
+2026-04-27 19:31:42.529 loss = self._train_step(batch)
+
+2026-04-27 19:31:42.529 File "/home/taiji/dl/runtime/script/trainer.py", line 412, in _train_step
+
+2026-04-27 19:31:42.529 logits = self.model(model_input) # (B, 1)
+
+2026-04-27 19:31:42.529 File "/opt/conda/envs/competition/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+
+2026-04-27 19:31:42.529 return self._call_impl(*args, **kwargs)
+
+2026-04-27 19:31:42.529 File "/opt/conda/envs/competition/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+
+2026-04-27 19:31:42.529 return forward_call(*args, **kwargs)
+
+2026-04-27 19:31:42.529 File "/home/taiji/dl/runtime/script/model.py", line 1655, in forward
+
+2026-04-27 19:31:42.529 tokens = self._embed_seq_domain(
+
+2026-04-27 19:31:42.529 File "/home/taiji/dl/runtime/script/model.py", line 1563, in _embed_seq_domain
+
+2026-04-27 19:31:42.530 e = emb(seq[:, i, :]) # (B, L, emb_dim)
+
+2026-04-27 19:31:42.530 File "/opt/conda/envs/competition/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+
+2026-04-27 19:31:42.530 return self._call_impl(*args, **kwargs)
+
+2026-04-27 19:31:42.530 File "/opt/conda/envs/competition/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+
+2026-04-27 19:31:42.530 return forward_call(*args, **kwargs)
+
+2026-04-27 19:31:42.530 File "/opt/conda/envs/competition/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 190, in forward
+
+2026-04-27 19:31:42.530 return F.embedding(
+
+2026-04-27 19:31:42.530 File "/opt/conda/envs/competition/lib/python3.10/site-packages/torch/nn/functional.py", line 2551, in embedding
+
+2026-04-27 19:31:42.530 return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+
+2026-04-27 19:31:42.530 torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 16.00 MiB. GPU 0 has a total capacity of 19.12 GiB of which 19.12 GiB is free. Process 2831023 has 87.99 GiB memory in use. Process 2644185 has 698.00 MiB memory in use. Process 2048853 has 3.95 GiB memory in use. Process 2049517 has 2.33 GiB memory in use. Of the allocated memory 1.89 GiB is allocated by PyTorch, and 19.39 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation. See documentation for Memory Management (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+2026-04-27 19:32:24.445 INFO: ======= End cmd =======
+
+2026-04-27 19:32:24.451 [TAIJI] user exit code: 1
