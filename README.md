@@ -1,5 +1,21 @@
 # KDD Submission Pipeline Guide
 
+# Experiments
+
+| model | settings | AUC | LogLoss |
+| --- | --- | --- | --- |
+| DCNv2 | toss tiny 10 epoch [00:06:16] | 0.625425 | 0.100677 | 
+| HyFormer | toss tiny 10 epoch [00:12:53] | 0.602661 | 0.100119 | 
+| WuKong | toss tiny 10 epoch [00:03:07] | 0.634248 | 0.099390 |
+
+# Submission Score
+
+| model | settings | AUC | LogLoss |
+| --- | --- | --- | --- |
+| DCNv2 | 1 epoch [00:13:39] | 0.790978 | - | 
+| HyFormer | 1 epoch [01:03:51] | 0.797713 | - | 
+| WuKong | 1 epoch [00:13:11] | 0.791163 | - |
+
 # 1. Environment 설정
 
 ## 1.1 conda 환경 생성
