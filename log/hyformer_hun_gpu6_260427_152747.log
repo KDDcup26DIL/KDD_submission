@@ -1,0 +1,58 @@
+04/27/26 15:27:52 - 0:00:00 - Args: {'data_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/hyformer_hun_gpu6_260427_152747/data_train_valid', 'schema_path': None, 'ckpt_dir': '/home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu6_260427_152747', 'log_dir': '/home/hun/KDD_Cup/KDD_submission/log', 'batch_size': 64, 'lr': 0.0001, 'num_epochs': 1, 'patience': 5, 'seed': 42, 'device': 'cuda', 'num_workers': 8, 'buffer_batches': 20, 'train_ratio': 1.0, 'valid_ratio': 0.1111111111, 'eval_every_n_steps': 0, 'seq_max_lens': 'seq_a:256,seq_b:256,seq_c:512,seq_d:512', 'd_model': 64, 'emb_dim': 64, 'num_queries': 2, 'num_hyformer_blocks': 2, 'num_heads': 4, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'use_time_buckets': True, 'rank_mixer_mode': 'full', 'use_rope': False, 'rope_base': 10000.0, 'loss_type': 'bce', 'focal_alpha': 0.1, 'focal_gamma': 2.0, 'sparse_lr': 0.05, 'sparse_weight_decay': 0.0, 'reinit_sparse_after_epoch': 1, 'reinit_cardinality_threshold': 0, 'emb_skip_threshold': 1000000, 'seq_id_threshold': 10000, 'ns_groups_json': '', 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 5, 'item_ns_tokens': 2, 'tf_events_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/hyformer_hun_gpu6_260427_152747/tf_events'}
+04/27/26 15:27:52 - 0:00:00 - Seq max_lens override: {'seq_a': 256, 'seq_b': 256, 'seq_c': 512, 'seq_d': 512}
+04/27/26 15:27:52 - 0:00:00 - Using Parquet data format (IterableDataset)
+04/27/26 15:27:52 - 0:00:00 - Row Group split: 8 train (800 rows), 1 valid (100 rows)
+04/27/26 15:27:52 - 0:00:00 - PCVRParquetDataset: 800 rows from 1 file(s), batch_size=64, buffer_batches=20, shuffle=True
+04/27/26 15:27:52 - 0:00:00 - PCVRParquetDataset: 100 rows from 1 file(s), batch_size=64, buffer_batches=0, shuffle=False
+04/27/26 15:27:52 - 0:00:00 - Parquet train: 800 rows, valid: 100 rows, batch_size=64, buffer_batches=20
+04/27/26 15:27:52 - 0:00:00 - No NS groups JSON found, using default: each feature as one group
+04/27/26 15:27:52 - 0:00:00 - RankMixerNSTokenizer: 46 fids, total_emb_dim=2944, chunk_dim=589, num_ns_tokens=5, pad=1
+04/27/26 15:27:52 - 0:00:00 - RankMixerNSTokenizer: 14 fids, total_emb_dim=896, chunk_dim=448, num_ns_tokens=2, pad=0
+04/27/26 15:27:54 - 0:00:02 - emb_skip_threshold=1000000: seq_a skipped 1/8 features
+04/27/26 15:27:54 - 0:00:02 - emb_skip_threshold=1000000: seq_b skipped 1/13 features
+04/27/26 15:27:54 - 0:00:02 - emb_skip_threshold=1000000: seq_c skipped 4/11 features
+04/27/26 15:27:56 - 0:00:04 - PCVRHyFormer model created: num_ns=8, T=16, d_model=64, rank_mixer_mode=full
+04/27/26 15:27:56 - 0:00:04 - User NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19], [20], [21], [22], [23], [24], [25], [26], [27], [28], [29], [30], [31], [32], [33], [34], [35], [36], [37], [38], [39], [40], [41], [42], [43], [44], [45]]
+04/27/26 15:27:56 - 0:00:04 - Item NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13]]
+04/27/26 15:27:56 - 0:00:04 - Total parameters: 160,938,753
+04/27/26 15:27:56 - 0:00:04 - Sparse params: 96 tensors, 158,453,312 parameters (Adagrad lr=0.05)
+04/27/26 15:27:56 - 0:00:04 - Dense params: 380 tensors, 2,485,441 parameters (AdamW lr=0.0001)
+04/27/26 15:27:57 - 0:00:05 - PCVRHyFormerRankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=1
+Start training (PCVRHyFormer)
+  0%|          | 0/16 [00:00<?, ?it/s]  0%|          | 0/16 [00:03<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/train.py", line 362, in <module>
+    main()
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/train.py", line 355, in main
+    trainer.train()
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/trainer.py", line 304, in train
+    loss = self._train_step(batch)
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/trainer.py", line 412, in _train_step
+    logits = self.model(model_input)  # (B, 1)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/model.py", line 1675, in forward
+    output = self._run_multi_seq_blocks(
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/model.py", line 1624, in _run_multi_seq_blocks
+    curr_qs, curr_ns, curr_seqs, curr_masks = block(
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/model.py", line 947, in forward
+    result = self.seq_encoders[i](
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/model.py", line 598, in forward
+    x, _ = self.self_attn(
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/model.py", line 226, in forward
+    out = F.scaled_dot_product_attention(
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 47.50 GiB of which 20.56 MiB is free. Process 4010226 has 43.89 GiB memory in use. Including non-PyTorch memory, this process has 3.58 GiB memory in use. Of the allocated memory 3.06 GiB is allocated by PyTorch, and 28.58 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

@@ -1,0 +1,59 @@
+04/27/26 15:10:12 - 0:00:00 - Args: {'data_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/hyformer_hun_gpu0_260427_151007/data_train_valid', 'schema_path': None, 'ckpt_dir': '/home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu0_260427_151007', 'log_dir': '/home/hun/KDD_Cup/KDD_submission/log', 'batch_size': 64, 'lr': 1e-05, 'num_epochs': 1, 'patience': 5, 'seed': 42, 'device': 'cuda', 'num_workers': 8, 'buffer_batches': 20, 'train_ratio': 1.0, 'valid_ratio': 0.1111111111, 'eval_every_n_steps': 0, 'seq_max_lens': 'seq_a:256,seq_b:256,seq_c:512,seq_d:512', 'd_model': 24, 'emb_dim': 16, 'num_queries': 2, 'num_hyformer_blocks': 1, 'num_heads': 2, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'use_time_buckets': True, 'rank_mixer_mode': 'full', 'use_rope': False, 'rope_base': 10000.0, 'loss_type': 'bce', 'focal_alpha': 0.1, 'focal_gamma': 2.0, 'sparse_lr': 0.001, 'sparse_weight_decay': 0.0, 'reinit_sparse_after_epoch': 1, 'reinit_cardinality_threshold': 0, 'emb_skip_threshold': 10000, 'seq_id_threshold': 10000, 'ns_groups_json': '', 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 2, 'item_ns_tokens': 1, 'tf_events_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/hyformer_hun_gpu0_260427_151007/tf_events'}
+04/27/26 15:10:12 - 0:00:00 - Seq max_lens override: {'seq_a': 256, 'seq_b': 256, 'seq_c': 512, 'seq_d': 512}
+04/27/26 15:10:12 - 0:00:00 - Using Parquet data format (IterableDataset)
+04/27/26 15:10:12 - 0:00:00 - Row Group split: 8 train (800 rows), 1 valid (100 rows)
+04/27/26 15:10:12 - 0:00:00 - PCVRParquetDataset: 800 rows from 1 file(s), batch_size=64, buffer_batches=20, shuffle=True
+04/27/26 15:10:12 - 0:00:00 - PCVRParquetDataset: 100 rows from 1 file(s), batch_size=64, buffer_batches=0, shuffle=False
+04/27/26 15:10:12 - 0:00:00 - Parquet train: 800 rows, valid: 100 rows, batch_size=64, buffer_batches=20
+04/27/26 15:10:12 - 0:00:00 - No NS groups JSON found, using default: each feature as one group
+04/27/26 15:10:12 - 0:00:00 - RankMixerNSTokenizer: 46 fids, total_emb_dim=736, chunk_dim=368, num_ns_tokens=2, pad=0
+04/27/26 15:10:12 - 0:00:00 - RankMixerNSTokenizer: 14 fids, total_emb_dim=224, chunk_dim=224, num_ns_tokens=1, pad=0
+04/27/26 15:10:12 - 0:00:00 - emb_skip_threshold=10000: seq_a skipped 2/8 features
+04/27/26 15:10:12 - 0:00:00 - emb_skip_threshold=10000: seq_b skipped 6/13 features
+04/27/26 15:10:12 - 0:00:00 - emb_skip_threshold=10000: seq_c skipped 4/11 features
+04/27/26 15:10:12 - 0:00:00 - emb_skip_threshold=10000: seq_d skipped 3/9 features
+04/27/26 15:10:12 - 0:00:00 - emb_skip_threshold=10000: item_ns skipped 2/14 features
+04/27/26 15:10:13 - 0:00:01 - PCVRHyFormer model created: num_ns=4, T=12, d_model=24, rank_mixer_mode=full
+04/27/26 15:10:13 - 0:00:01 - User NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19], [20], [21], [22], [23], [24], [25], [26], [27], [28], [29], [30], [31], [32], [33], [34], [35], [36], [37], [38], [39], [40], [41], [42], [43], [44], [45]]
+04/27/26 15:10:13 - 0:00:01 - Item NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13]]
+04/27/26 15:10:13 - 0:00:01 - Total parameters: 1,555,225
+04/27/26 15:10:13 - 0:00:01 - Sparse params: 85 tensors, 1,331,712 parameters (Adagrad lr=0.001)
+04/27/26 15:10:13 - 0:00:01 - Dense params: 228 tensors, 223,513 parameters (AdamW lr=1e-05)
+04/27/26 15:10:14 - 0:00:02 - PCVRHyFormerRankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=1
+Start training (PCVRHyFormer)
+  0%|          | 0/16 [00:00<?, ?it/s]  0%|          | 0/16 [00:04<?, ?it/s, loss=0.6802]  6%|▋         | 1/16 [00:04<01:10,  4.73s/it, loss=0.6802]  6%|▋         | 1/16 [00:04<01:10,  4.73s/it, loss=nan]    12%|█▎        | 2/16 [00:04<00:28,  2.06s/it, loss=nan] 12%|█▎        | 2/16 [00:05<00:28,  2.06s/it, loss=nan] 19%|█▉        | 3/16 [00:05<00:15,  1.17s/it, loss=nan] 19%|█▉        | 3/16 [00:05<00:15,  1.17s/it, loss=nan] 25%|██▌       | 4/16 [00:05<00:08,  1.34it/s, loss=nan] 25%|██▌       | 4/16 [00:05<00:08,  1.34it/s, loss=nan] 25%|██▌       | 4/16 [00:05<00:08,  1.34it/s, loss=nan] 38%|███▊      | 6/16 [00:05<00:04,  2.47it/s, loss=nan] 38%|███▊      | 6/16 [00:05<00:04,  2.47it/s, loss=nan] 44%|████▍     | 7/16 [00:05<00:02,  3.12it/s, loss=nan] 44%|████▍     | 7/16 [00:05<00:02,  3.12it/s, loss=nan] 50%|█████     | 8/16 [00:05<00:02,  3.85it/s, loss=nan] 50%|█████     | 8/16 [00:05<00:02,  3.85it/s, loss=nan] 56%|█████▋    | 9/16 [00:05<00:01,  3.65it/s, loss=nan] 56%|█████▋    | 9/16 [00:05<00:01,  3.65it/s, loss=nan] 56%|█████▋    | 9/16 [00:06<00:01,  3.65it/s, loss=nan] 69%|██████▉   | 11/16 [00:06<00:00,  5.14it/s, loss=nan] 69%|██████▉   | 11/16 [00:06<00:00,  5.14it/s, loss=nan] 75%|███████▌  | 12/16 [00:06<00:00,  5.71it/s, loss=nan] 75%|███████▌  | 12/16 [00:06<00:00,  5.71it/s, loss=nan] 75%|███████▌  | 12/16 [00:06<00:00,  5.71it/s, loss=nan] 88%|████████▊ | 14/16 [00:06<00:00,  6.95it/s, loss=nan] 88%|████████▊ | 14/16 [00:06<00:00,  6.95it/s, loss=nan] 88%|████████▊ | 14/16 [00:06<00:00,  6.95it/s, loss=nan]100%|██████████| 16/16 [00:06<00:00,  7.92it/s, loss=nan]100%|██████████| 16/16 [00:06<00:00,  2.45it/s, loss=nan]
+04/27/26 15:10:21 - 0:00:09 - Epoch 1, Average Loss: nan
+Start Evaluation (PCVRHyFormer) - validation
+  0%|          | 0/2 [00:00<?, ?it/s] 50%|█████     | 1/2 [00:00<00:00,  1.97it/s]100%|██████████| 2/2 [00:00<00:00,  2.77it/s]
+04/27/26 15:10:22 - 0:00:10 - [Evaluate] 100/100 predictions are NaN, filtering them out
+04/27/26 15:10:22 - 0:00:10 - Epoch 1 Validation | AUC: 0.0, LogLoss: inf
+04/27/26 15:10:22 - 0:00:10 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu0_260427_151007/global_step16.layer=1.head=2.hidden=24.best_model/model.pt
+04/27/26 15:10:22 - 0:00:10 - Re-initialized 84 high-cardinality Embeddings (vocab>0), kept 1
+04/27/26 15:10:22 - 0:00:10 - Rebuilt Adagrad optimizer after epoch 1, restored optimizer state for 0 low-cardinality params
+04/27/26 15:10:22 - 0:00:10 - Training complete!
+Using checkpoint: /home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu0_260427_151007/global_step16.layer=1.head=2.hidden=24.best_model
+2026-04-27 15:10:27,681 - INFO - Using schema: /home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu0_260427_151007/global_step16.layer=1.head=2.hidden=24.best_model/schema.json
+2026-04-27 15:10:27,682 - INFO - Loaded train_config from /home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu0_260427_151007/global_step16.layer=1.head=2.hidden=24.best_model/train_config.json
+2026-04-27 15:10:27,682 - INFO - seq_max_lens: {'seq_a': 256, 'seq_b': 256, 'seq_c': 512, 'seq_d': 512}
+2026-04-27 15:10:27,697 - INFO - PCVRParquetDataset: 100 rows from 1 file(s), batch_size=64, buffer_batches=0, shuffle=False
+2026-04-27 15:10:27,697 - INFO - Total test samples: 100
+2026-04-27 15:10:27,698 - INFO - No NS groups JSON found, using default: each feature as one group
+2026-04-27 15:10:27,698 - INFO - Building PCVRHyFormer with cfg: {'d_model': 24, 'emb_dim': 16, 'num_queries': 2, 'num_hyformer_blocks': 1, 'num_heads': 2, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'num_time_buckets': 64, 'rank_mixer_mode': 'full', 'use_rope': False, 'rope_base': 10000.0, 'emb_skip_threshold': 10000, 'seq_id_threshold': 10000, 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 2, 'item_ns_tokens': 1}
+2026-04-27 15:10:27,738 - INFO - RankMixerNSTokenizer: 46 fids, total_emb_dim=736, chunk_dim=368, num_ns_tokens=2, pad=0
+2026-04-27 15:10:27,744 - INFO - RankMixerNSTokenizer: 14 fids, total_emb_dim=224, chunk_dim=224, num_ns_tokens=1, pad=0
+2026-04-27 15:10:27,797 - INFO - emb_skip_threshold=10000: seq_a skipped 2/8 features
+2026-04-27 15:10:27,797 - INFO - emb_skip_threshold=10000: seq_b skipped 6/13 features
+2026-04-27 15:10:27,797 - INFO - emb_skip_threshold=10000: seq_c skipped 4/11 features
+2026-04-27 15:10:27,797 - INFO - emb_skip_threshold=10000: seq_d skipped 3/9 features
+2026-04-27 15:10:27,797 - INFO - emb_skip_threshold=10000: item_ns skipped 2/14 features
+2026-04-27 15:10:28,876 - INFO - Loading checkpoint from /home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu0_260427_151007/global_step16.layer=1.head=2.hidden=24.best_model/model.pt
+infer.py:246: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  state_dict = torch.load(ckpt_path, map_location=device)
+2026-04-27 15:10:29,098 - INFO - Model loaded successfully
+2026-04-27 15:10:29,099 - INFO - Starting inference...
+2026-04-27 15:10:31,873 - INFO - Inference complete: 100 predictions
+2026-04-27 15:10:31,875 - INFO - Saved 100 predictions to /home/hun/KDD_Cup/KDD_submission/local_runs/hyformer_hun_gpu0_260427_151007/eval_results/predictions.json
+Computing held-out test metrics
+Filtered 100/100 NaN predictions before metric computation
+Local test AUC: 0.000000
+Local test LogLoss: inf
