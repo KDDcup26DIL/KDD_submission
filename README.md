@@ -2,6 +2,7 @@
 
 # Experiments
 
+# Toss Tiny (110,257 row, 279.0 MB)
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
 | RF | toss tiny 10 epoch | 0.556976 | 0.104141 |
@@ -12,14 +13,19 @@
 | EulerNet | toss tiny 10 epoch | 0.664916 | 0.100351 |
 | SCV | toss tiny 10 epoch | 0.636060 | 0.107081 |
 
+## Frappe (84,373 row, 6.8 MB)
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
+| RF | frappe 10 epoch | 0.627335 | 2.188339 |
+| MLP | frappe 10 epoch | 0.575936 | 2.180140 |
+| LSTM | frappe 10 epoch | 0.583377 | 1.851733 | 
 | DCNv2 | frappe 10 epoch | 0.583559 | 4.146001 |
 | WuKong | frappe 10 epoch | 0.604436 | 1.864935 |
 | HyFormer | frappe 10 epoch | 0.571346 | 0.619358 |
 | EulerNet | frappe 10 epoch | 0.596707 | 3.624638 |
 | SCV | frappe 10 epoch | 0.567228 | 6.251460 |
 
+## Criteo (3,951,801 row, 141.8 MB)
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
 | DCNv2 | criteo tiny 10 epoch | 0.716244 | 0.137127 |
@@ -27,6 +33,8 @@
 | HyFormer | criteo tiny 10 epoch | 
 | EulerNet | criteo tiny 10 epoch | 
 | SCV | criteo tiny 10 epoch | 
+
+<!-- ## Sample (1,000 row, 40.1MB) -->
 
 
 # Submission Score

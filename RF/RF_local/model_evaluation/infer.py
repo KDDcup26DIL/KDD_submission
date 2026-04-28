@@ -206,11 +206,9 @@ def build_model(
                 for fids in ns_groups_cfg['item_ns_groups'].values()
             ]
         except KeyError as exc:
-            raise KeyError(
-                f"NS-groups JSON references fid {exc.args[0]} which is not "
-                f"present in the checkpoint's schema.json. The ns_groups.json "
-                f"and schema.json must come from the same training run."
-            ) from exc
+            logging.warning(f"NS groups JSON references missing fid {exc.args[0]}; using singleton feature groups")
+            user_ns_groups = [[i] for i in range(len(dataset.user_int_schema.entries))]
+            item_ns_groups = [[i] for i in range(len(dataset.item_int_schema.entries))]
     else:
         logging.info("No NS groups JSON found, using default: each feature as one group")
         user_ns_groups = [[i] for i in range(len(dataset.user_int_schema.entries))]

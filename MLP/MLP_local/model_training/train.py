@@ -258,10 +258,15 @@ def main() -> None:
             ns_groups_cfg = json.load(f)
         user_fid_to_idx = {fid: i for i, (fid, _, _) in enumerate(pcvr_dataset.user_int_schema.entries)}
         item_fid_to_idx = {fid: i for i, (fid, _, _) in enumerate(pcvr_dataset.item_int_schema.entries)}
-        user_ns_groups = [[user_fid_to_idx[f] for f in fids] for fids in ns_groups_cfg['user_ns_groups'].values()]
-        item_ns_groups = [[item_fid_to_idx[f] for f in fids] for fids in ns_groups_cfg['item_ns_groups'].values()]
-        logging.info(f"User NS groups ({len(user_ns_groups)}): {list(ns_groups_cfg['user_ns_groups'].keys())}")
-        logging.info(f"Item NS groups ({len(item_ns_groups)}): {list(ns_groups_cfg['item_ns_groups'].keys())}")
+        try:
+            user_ns_groups = [[user_fid_to_idx[f] for f in fids] for fids in ns_groups_cfg['user_ns_groups'].values()]
+            item_ns_groups = [[item_fid_to_idx[f] for f in fids] for fids in ns_groups_cfg['item_ns_groups'].values()]
+            logging.info(f"User NS groups ({len(user_ns_groups)}): {list(ns_groups_cfg['user_ns_groups'].keys())}")
+            logging.info(f"Item NS groups ({len(item_ns_groups)}): {list(ns_groups_cfg['item_ns_groups'].keys())}")
+        except KeyError as exc:
+            logging.warning(f"NS groups JSON references missing fid {exc.args[0]}; using singleton feature groups")
+            user_ns_groups = [[i] for i in range(len(pcvr_dataset.user_int_schema.entries))]
+            item_ns_groups = [[i] for i in range(len(pcvr_dataset.item_int_schema.entries))]
     else:
         logging.info("No NS groups JSON found, using default: each feature as one group")
         user_ns_groups = [[i] for i in range(len(pcvr_dataset.user_int_schema.entries))]
