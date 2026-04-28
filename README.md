@@ -17,6 +17,8 @@
 | DCNv2 | criteo tiny 10 epoch | 0.716244 | 0.137127 |
 | WuKong | criteo tiny 10 epoch | 0.718297 | 0.136963 | 
 | HyFormer | criteo tiny 10 epoch | 
+| EulerNet | criteo tiny 10 epoch | 
+| SCV | criteo tiny 10 epoch | 
 
 
 # Submission Score
