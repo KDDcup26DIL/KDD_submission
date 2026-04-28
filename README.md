@@ -31,8 +31,8 @@
 | DCNv2 | criteo tiny 10 epoch | 0.716244 | 0.137127 |
 | WuKong | criteo tiny 10 epoch | 0.718297 | 0.136963 | 
 | HyFormer | criteo tiny 10 epoch | 
-| EulerNet | criteo tiny 10 epoch | 
-| SCV | criteo tiny 10 epoch | 
+| EulerNet | criteo tiny 10 epoch | 0.685526 | 0.139992 |
+| SCV | criteo tiny 10 epoch | 0.716244 | 0.137127 |
 
 # Avazu (28,300,276 row, 1.2 G)
 | model | settings | AUC | LogLoss |
@@ -44,6 +44,10 @@
 | HyFormer | 1 epoch |  |  |
 | EulerNet | 1 epoch | 0.758946 | 0.370776 |
 | SCV | 1 epoch |  |  |
+
+# iPinYou (15,395,258 row, 519 MB)
+| model | settings | AUC | LogLoss |
+| --- | --- | --- | --- |
 
 <!-- ## Sample (1,000 row, 40.1MB) -->
 
