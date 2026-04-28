@@ -34,6 +34,17 @@
 | EulerNet | criteo tiny 10 epoch | 
 | SCV | criteo tiny 10 epoch | 
 
+# Avazu (28,300,276 row, 1.2 G)
+| model | settings | AUC | LogLoss |
+| --- | --- | --- | --- |
+| RF | 1 epoch |  |  |
+| MLP | 1 epoch |  |  | 
+| DCNv2 | 1 epoch |  |  | 
+| WuKong | 1 epoch |  |  |
+| HyFormer | 1 epoch |  |  |
+| EulerNet | 1 epoch | 0.758946 | 0.370776 |
+| SCV | 1 epoch |  |  |
+
 <!-- ## Sample (1,000 row, 40.1MB) -->
 
 
