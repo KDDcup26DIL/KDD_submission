@@ -10,6 +10,9 @@
 | DCNv2 | frappe 10 epoch | 0.583559 | 4.146001 |
 | WuKong | frappe 10 epoch | 0.604436 | 1.864935 |
 | HyFormer | frappe 10 epoch | 0.571346 | 0.619358 |
+| DCNv2 | criteo tiny 10 epoch | 0.716244 | 0.137127 |
+| WuKong | criteo tiny 10 epoch | 0.718297 | 0.136963 | 
+| HyFormer | criteo tiny 10 epoch | 
 
 
 # Submission Score

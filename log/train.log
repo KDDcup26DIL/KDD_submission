@@ -14,15 +14,66 @@
 04/28/26 13:16:17 - 0:00:01 - Sparse params: 6 tensors, 12,800,896 parameters (Adagrad lr=0.05)
 04/28/26 13:16:17 - 0:00:01 - Dense params: 42 tensors, 578,241 parameters (AdamW lr=0.0001)
 04/28/26 13:16:18 - 0:00:02 - PCVRDCNv2RankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=04/28/26 13:25:10 - 0:09:00 - Epoch 1, Average Loss: 0.13605301972961256
-04/28/26 13:26:03 - 0:09:52 - Epoch 1 Validation | AUC: 0.6940386008993038, LogLoss: 0.13621479272842407
-04/28/26 13:26:03 - 0:09:52 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step12350.layer=3.head=4.hidden=64.best_model/model.pt
-04/28/26 13:26:03 - 0:09:52 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
-04/28/26 13:26:03 - 0:09:52 - Rebuilt Adagrad optimizer after epoch 1, restored optimizer state for 0 low-cardinality params
-04/28/26 13:34:55 - 0:18:44 - Epoch 2, Average Loss: 0.1352016270975111
-04/28/26 13:35:44 - 0:19:33 - Epoch 2 Validation | AUC: 0.6987308324373906, LogLoss: 0.1358664631843567
-04/28/26 13:35:44 - 0:19:33 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step12350.layer=3.head=4.hidden=64.best_model
-04/28/26 13:35:44 - 0:19:33 - model earlyStopping counter reset!
-04/28/26 13:35:44 - 0:19:33 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step24700.layer=3.head=4.hidden=64.best_model/model.pt
-04/28/26 13:35:44 - 0:19:33 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
-04/28/26 13:35:44 - 0:19:33 - Rebuilt Adagrad optimizer after epoch 2, restored optimizer state for 0 low-cardinality params
-
+04/28/26 13:26:03 - 0:09:52 - Epoch 1 Validation | AUC: 0.6940386008993038, L04/28/26 14:00:50 - 0:45:00 - Epoch 1, Average Loss: 0.13916609662143808
+04/28/26 14:03:36 - 0:47:46 - Epoch 1 Validation | AUC: 0.6574439691649325, LogLoss: 0.13903404772281647
+04/28/26 14:03:37 - 0:47:47 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu6_260428_131547/global_step12350.layer=2.head=4.hidden=64.best_model/model.pt
+04/28/26 14:03:37 - 0:47:47 - Re-initialized 6 high-cardinality Embeddings (vocab>0), kept 1
+04/28/26 14:03:37 - 0:47:47 - Rebuilt Adagrad optimizer after epoch 1, restored optimizer state for 0 low-cardinality params
+04/28/26 14:47:18 - 1:31:27 - Epoch 2, Average Loss: 0.13761394919729547
+04/28/26 14:49:53 - 1:34:02 - Epoch 2 Validation | AUC: 0.6673119189827508, LogLoss: 0.13817715644836426
+04/28/26 14:49:53 - 1:34:02 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu6_260428_131547/global_step12350.layer=2.head=4.hidden=64.best_model
+04/28/26 14:49:53 - 1:34:02 - model earlyStopping counter reset!
+04/28/26 14:49:53 - 1:34:02 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu6_260428_131547/global_step24700.layer=2.head=4.hidden=64.best_model/model.pt
+04/28/26 14:49:53 - 1:34:02 - Re-initialized 6 high-cardinality Embeddings (vocab>0), kept 1
+04/28/26 14:49:53 - 1:34:02 - Rebuilt Adagrad optimizer after epoch 2, restored optimizer state for 0 low-cardinality params
+Loss: 0.13557274639606476
+04/28/26 13:45:32 - 0:29:21 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step24700.layer=3.head=4.hidden=64.best_model
+04/28/26 13:45:32 - 0:29:21 - model earlyStopping counter reset!
+04/28/26 13:45:32 - 0:29:22 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step37050.layer=3.head=4.hidden=64.best_model/model.pt
+04/28/26 13:45:32 - 0:29:22 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
+04/28/26 13:45:32 - 0:29:22 - Rebuilt Adagrad optimizer after epoch 3, restored optimizer state for 0 low-cardinality para04/04/28/26 13:54:39 - 0:38:29 - Epoch 4, Average Loss: 0.13458107490288584
+04/28/26 13:55:25 - 0:39:14 - Epoch 4 Validation | AUC: 0.7029159187582115, LogLoss: 0.13533315062522888
+04/28/26 13:55:25 - 0:39:14 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step37050.layer=3.head=4.hidden=64.best_model
+04/28/26 13:55:25 - 0:39:14 - model earlyStopping counter reset!
+04/28/26 13:55:25 - 0:39:14 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step49400.layer=3.head=4.hidden=64.best_model/model.pt
+04/28/26 13:55:25 - 0:39:14 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
+04/28/26 13:55:25 - 0:39:14 - Rebuilt Adagrad optimizer after epoch 4, restored optimizer state for 0 low-cardinality pa04/2804/28/26 14:05:40 - 0:49:29 - Epoch 5, Average Loss: 0.1343583401099511
+04/28/26 14:06:23 - 0:50:12 - Epoch 5 Validation | AUC: 0.7032892983318753, LogLoss: 0.13535720109939575
+04/28/26 14:06:23 - 0:50:12 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step49400.layer=3.head=4.hidden=64.best_model
+04/28/26 14:06:23 - 0:50:12 - model earlyStopping counter reset!
+04/28/26 14:06:23 - 0:50:13 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step61750.layer=3.head=4.hidden=64.best_model/model.pt
+04/28/26 14:06:23 - 0:50:13 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
+04/28/26 14:06:23 - 0:50:13 - Rebuilt Adagrad optimizer after epoch 5, restored optimizer state for 0 low-cardinality p04/28/04/28/26 14:15:17 - 0:59:06 - Epoch 6, Average Loss: 0.13412410313979936
+04/28/26 14:16:03 - 0:59:52 - Epoch 6 Validation | AUC: 0.7060590999115204, LogLoss: 0.13517679274082184
+04/28/26 14:16:03 - 0:59:52 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step61750.layer=3.head=4.hidden=64.best_model
+04/28/26 14:16:03 - 0:59:52 - model earlyStopping counter reset!
+04/28/26 14:16:03 - 0:59:52 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step74100.layer=3.head=4.hidden=64.best_model/model.pt
+04/28/26 14:16:03 - 0:59:52 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
+04/28/26 14:16:03 - 0:59:52 - Rebuilt Adagrad optimizer after epoch 6, restored optimizer state for 0 low-cardinality params
+04/28/26 14:26:15 - 1:10:05 - Epoch 7, Average Loss: 0.13399258987683998
+04/28/26 14:27:04 - 1:10:54 - Epoch 7 Validation | AUC: 0.705922283051953, LogLoss: 0.13507148623466492
+04/28/26 14:27:04 - 1:10:54 - model earlyStopping counter: 1 / 5
+04/28/26 14:27:04 - 1:10:54 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
+04/28/26 14:27:04 - 1:10:54 - Rebuilt Adagrad optimizer after epoch 7, restored optimizer state for 0 low-cardinality params
+04/28/26 14:35:57 - 1:19:46 - Epoch 8, Average Loss: 0.1339101874022952
+04/28/26 14:36:44 - 1:20:33 - Epoch 8 Validation | AUC: 0.7071600110276205, LogLoss: 0.1349019706249237
+04/28/26 14:36:44 - 1:20:33 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step74100.layer=3.head=4.hidden=64.best_model
+04/28/26 14:36:44 - 1:20:33 - model earlyStopping counter reset!
+04/28/26 14:36:44 - 1:20:33 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step98800.layer=3.head=4.hidden=64.best_model/model.pt
+04/28/26 14:36:44 - 1:20:33 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
+04/28/26 14:36:44 - 1:20:33 - Rebuilt Adagrad optimizer after epoch 8, restored optimizer state for 0 low-cardinality params
+04/28/26 14:46:55 - 1:30:45 - Epoch 9, Average Loss: 0.1338701533293917
+04/28/26 14:47:41 - 1:31:31 - Epoch 9 Validation | AUC: 0.7076896760124127, LogLoss: 0.1348939836025238
+04/28/26 14:47:41 - 1:31:31 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step98800.layer=3.head=4.hidden=64.best_model
+04/28/26 14:47:41 - 1:31:31 - model earlyStopping counter reset!
+04/28/26 14:47:42 - 1:31:31 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step111150.layer=3.head=4.hidden=64.best_model/model.pt
+04/28/26 14:47:42 - 1:31:31 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
+04/28/26 14:47:42 - 1:31:31 - Rebuilt Adagrad optimizer after epoch 9, restored optimizer state for 0 low-cardinality params
+04/28/26 14:57:19 - 1:41:08 - Epoch 10, Average Loss: 0.13375993417131032
+04/28/26 14:58:06 - 1:41:56 - Epoch 10 Validation | AUC: 0.7079183516916763, LogLoss: 0.13485892117023468
+04/28/26 14:58:06 - 1:41:56 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step111150.layer=3.head=4.hidden=64.best_model
+04/28/26 14:58:06 - 1:41:56 - model earlyStopping counter reset!
+04/28/26 14:58:07 - 1:41:56 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu6_260428_131607/global_step123500.layer=3.head=4.hidden=64.best_model/model.pt
+04/28/26 14:58:07 - 1:41:56 - Re-initialized 6 high-cardinality embedding tensors (threshold=0)
+04/28/26 14:58:07 - 1:41:56 - Rebuilt Adagrad optimizer after epoch 10, restored optimizer state for 0 low-cardinality params
+04/28/26 14:58:07 - 1:41:56 - Training complete!
