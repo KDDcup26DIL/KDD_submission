@@ -7,6 +7,7 @@
 | DCNv2 | toss tiny 10 epoch | 0.647718 | 0.098608 | 
 | WuKong | toss tiny 10 epoch | 0.675493 | 0.097939 |
 | HyFormer | toss tiny 10 epoch | 0.596690 | 0.100134 | 
+| SCV | toss tiny 10 epoch | 0.636060 | 0.107081 |
 | DCNv2 | frappe 10 epoch | 0.583559 | 4.146001 |
 | WuKong | frappe 10 epoch | 0.604436 | 1.864935 |
 | HyFormer | frappe 10 epoch | 0.571346 | 0.619358 |
