@@ -41,7 +41,7 @@ unzip toss_v2.zip
 gdown --fuzzy "https://drive.google.com/file/d/1aDBdkknJa2cLeGz3ItDEr5oxSTW1LlCK/view?usp=sharing"
 unzip frappe.zip
 
-gdwon --fuzzy "https://drive.google.com/file/d/1TdighSNhGYLPRw6junzGJcB5aoyw8jkc/view?usp=sharing"
+gdown --fuzzy "https://drive.google.com/file/d/1TdighSNhGYLPRw6junzGJcB5aoyw8jkc/view?usp=sharing"
 unzip criteo.zip
 ```
 - gdown으로 Google Drive 파일 다운로드
