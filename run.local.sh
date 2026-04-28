@@ -3,37 +3,38 @@ set -euo pipefail
 
 usage() {
     cat <<'EOT'
-Usage: ./run.local.sh <modelname> <gpu_id> [extra train args...]
+Usage: ./run.local.sh <modelname> <gpu_id> <dataset_name> [extra train args...]
 
 Example:
-  ./run.local.sh dcnv2 6 --num_epochs 3 --batch_size 128
+  ./run.local.sh dcnv2 6 toss --num_epochs 3 --batch_size 128
 
 Behavior:
   1. Create <modelname>/<modelname>_local from sample/ if missing
-  2. Merge data/toss/tiny_train.parquet, valid.parquet, test.parquet
-  3. Re-split merged toss data into train/valid/test = 8:1:1
+  2. Read data/<dataset_name>/train.parquet, valid.parquet, test.parquet
+  3. Train with train.py on train.parquet + valid.parquet
   4. Train using <modelname>/<modelname>_local/model_training
   5. Write a run log under top-level log/
   6. Write checkpoints under top-level checkpoint/
-  7. Run inference on held-out test using <modelname>/<modelname>_local/model_evaluation
+  7. Run inference on test.parquet using <modelname>/<modelname>_local/model_evaluation
   8. Print test AUC and LogLoss
 
 Requirements:
-  - data/toss/tiny_train.parquet
-  - data/toss/valid.parquet
-  - data/toss/test.parquet
-  - data/toss/schema.json or data/schema.json
+  - data/<dataset_name>/train.parquet
+  - data/<dataset_name>/valid.parquet
+  - data/<dataset_name>/test.parquet
+  - data/<dataset_name>/schema.json or data/schema.json
   - current Python environment must have pyarrow, torch, sklearn
 EOT
 }
 
 MODEL_NAME="${1:-}"
 GPU_ID="${2:-}"
-if [[ -z "$MODEL_NAME" || -z "$GPU_ID" ]]; then
+DATASET_NAME="${3:-}"
+if [[ -z "$MODEL_NAME" || -z "$GPU_ID" || -z "$DATASET_NAME" ]]; then
     usage
     exit 1
 fi
-shift 2 || true
+shift 3 || true
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SAMPLE_DIR="$ROOT_DIR/sample"
@@ -42,11 +43,11 @@ LOCAL_DIR="$MODEL_DIR/${MODEL_NAME}_local"
 LOCAL_TRAIN_DIR="$LOCAL_DIR/model_training"
 LOCAL_EVAL_DIR="$LOCAL_DIR/model_evaluation"
 DATA_DIR="$ROOT_DIR/data"
-TOSS_DATA_DIR="$DATA_DIR/toss"
-SOURCE_TINY_TRAIN_PARQUET="$TOSS_DATA_DIR/tiny_train.parquet"
-SOURCE_VALID_PARQUET="$TOSS_DATA_DIR/valid.parquet"
-SOURCE_TEST_PARQUET="$TOSS_DATA_DIR/test.parquet"
-SOURCE_SCHEMA="$TOSS_DATA_DIR/schema.json"
+DATASET_DIR="$DATA_DIR/$DATASET_NAME"
+SOURCE_TRAIN_PARQUET="$DATASET_DIR/train.parquet"
+SOURCE_VALID_PARQUET="$DATASET_DIR/valid.parquet"
+SOURCE_TEST_PARQUET="$DATASET_DIR/test.parquet"
+SOURCE_SCHEMA="$DATASET_DIR/schema.json"
 if [[ ! -f "$SOURCE_SCHEMA" ]]; then
     SOURCE_SCHEMA="$DATA_DIR/schema.json"
 fi
@@ -67,7 +68,26 @@ RUN_LOG_FILE="$TOP_LOG_DIR/${RUN_TAG}.log"
 RUN_CKPT_DIR="$TOP_CKPT_DIR/${RUN_TAG}"
 RUN_DATA_DIR="$TOP_RUN_DIR/${RUN_TAG}"
 
-for required_file in "$SOURCE_TINY_TRAIN_PARQUET" "$SOURCE_VALID_PARQUET" "$SOURCE_TEST_PARQUET"; do
+USE_CONDA_FUXICTR=0
+PYTHON_RUN=(python3)
+if ! python3 -c 'import pyarrow.parquet, sklearn' >/dev/null 2>&1; then
+    if command -v conda >/dev/null 2>&1 && conda run -n fuxictr python -c 'import pyarrow.parquet, sklearn' >/dev/null 2>&1; then
+        USE_CONDA_FUXICTR=1
+        PYTHON_RUN=(conda run -n fuxictr python)
+    else
+        echo "Neither python3 nor conda env 'fuxictr' can import pyarrow and sklearn." >&2
+        echo "Install pyarrow/sklearn or activate the environment before running local validation." >&2
+        exit 1
+    fi
+fi
+
+if [[ ! -d "$DATASET_DIR" ]]; then
+    echo "Missing dataset directory: $DATASET_DIR" >&2
+    echo "Expected KDD_submission/data/<dataset_name> with train.parquet, valid.parquet, test.parquet" >&2
+    exit 1
+fi
+
+for required_file in "$SOURCE_TRAIN_PARQUET" "$SOURCE_VALID_PARQUET" "$SOURCE_TEST_PARQUET"; do
     if [[ ! -f "$required_file" ]]; then
         echo "Missing parquet file: $required_file" >&2
         exit 1
@@ -76,7 +96,7 @@ done
 
 if [[ ! -f "$SOURCE_SCHEMA" ]]; then
     echo "Missing schema file: $SOURCE_SCHEMA" >&2
-    echo "Place schema.json under KDD_submission/data/toss/ or KDD_submission/data/ before running local validation." >&2
+    echo "Place schema.json under KDD_submission/data/$DATASET_NAME/ or KDD_submission/data/ before running local validation." >&2
     exit 1
 fi
 
@@ -93,56 +113,42 @@ if [[ ! -d "$LOCAL_EVAL_DIR" ]]; then
 fi
 
 TRAIN_DIR="$RUN_DATA_DIR/data_train"
-VALID_DIR="$RUN_DATA_DIR/data_valid"
 TEST_DIR="$RUN_DATA_DIR/data_test"
 TF_EVENTS_DIR="$RUN_DATA_DIR/tf_events"
 RESULT_DIR="$RUN_DATA_DIR/eval_results"
 
 rm -rf "$RUN_DATA_DIR"
-mkdir -p "$TRAIN_DIR" "$VALID_DIR" "$TEST_DIR" "$RUN_CKPT_DIR" "$TF_EVENTS_DIR" "$RESULT_DIR"
+mkdir -p "$TRAIN_DIR" "$TEST_DIR" "$RUN_CKPT_DIR" "$TF_EVENTS_DIR" "$RESULT_DIR"
 
 cp "$SOURCE_SCHEMA" "$TRAIN_DIR/schema.json"
-cp "$SOURCE_SCHEMA" "$VALID_DIR/schema.json"
 cp "$SOURCE_SCHEMA" "$TEST_DIR/schema.json"
 
-echo "Preparing merged toss local split from:"
-echo "  $SOURCE_TINY_TRAIN_PARQUET"
-echo "  $SOURCE_VALID_PARQUET"
-echo "  $SOURCE_TEST_PARQUET"
-SPLIT_SCRIPT="$RUN_DATA_DIR/build_split.py"
-cat > "$SPLIT_SCRIPT" <<PY
-from pathlib import Path
-import pyarrow as pa
+ln -s "$SOURCE_TRAIN_PARQUET" "$TRAIN_DIR/train.parquet"
+ln -s "$SOURCE_VALID_PARQUET" "$TRAIN_DIR/valid.parquet"
+ln -s "$SOURCE_TEST_PARQUET" "$TEST_DIR/test.parquet"
+
+echo "Preparing local run from dataset=$DATASET_NAME:"
+echo "  train: $SOURCE_TRAIN_PARQUET"
+echo "  valid: $SOURCE_VALID_PARQUET"
+echo "  test : $SOURCE_TEST_PARQUET"
+
+VALID_RATIO="$(
+"${PYTHON_RUN[@]}" - "$SOURCE_TRAIN_PARQUET" "$SOURCE_VALID_PARQUET" <<'PY'
+import sys
 import pyarrow.parquet as pq
 
-paths = [
-    Path(r"$SOURCE_TINY_TRAIN_PARQUET"),
-    Path(r"$SOURCE_VALID_PARQUET"),
-    Path(r"$SOURCE_TEST_PARQUET"),
-]
-train_dir = Path(r"$TRAIN_DIR")
-valid_dir = Path(r"$VALID_DIR")
-test_dir = Path(r"$TEST_DIR")
-
-tables = [pq.read_table(p) for p in paths]
-table = pa.concat_tables(tables, promote=True)
-num_rows = table.num_rows
-train_rows = int(num_rows * 0.8)
-valid_rows = int(num_rows * 0.1)
-test_rows = num_rows - train_rows - valid_rows
-
-train = table.slice(0, train_rows)
-valid = table.slice(train_rows, valid_rows)
-test = table.slice(train_rows + valid_rows, test_rows)
-
-pq.write_table(train, train_dir / 'train_0000.parquet', row_group_size=1024)
-pq.write_table(valid, valid_dir / 'valid_0000.parquet', row_group_size=1024)
-pq.write_table(test, test_dir / 'test_0000.parquet', row_group_size=1024)
-
-print(f'Prepared merged toss split rows={num_rows}')
-print(f'  train={train.num_rows}, valid={valid.num_rows}, test={test.num_rows}')
+train_path, valid_path = sys.argv[1:3]
+train_rgs = pq.ParquetFile(train_path).metadata.num_row_groups
+valid_rgs = pq.ParquetFile(valid_path).metadata.num_row_groups
+total_rgs = train_rgs + valid_rgs
+if train_rgs <= 0:
+    raise SystemExit(f"train.parquet has no row groups: {train_path}")
+if valid_rgs <= 0:
+    raise SystemExit(f"valid.parquet has no row groups: {valid_path}")
+print(format(valid_rgs / total_rgs, ".17g"))
 PY
-conda run -n fuxictr python "$SPLIT_SCRIPT"
+)"
+echo "Computed validation split ratio: $VALID_RATIO"
 
 echo "Running local training for model=$MODEL_NAME on gpu=$GPU_ID"
 (
@@ -152,7 +158,11 @@ echo "Running local training for model=$MODEL_NAME on gpu=$GPU_ID"
     export TRAIN_TF_EVENTS_PATH="$TF_EVENTS_DIR"
     export CUDA_VISIBLE_DEVICES="$GPU_ID"
     cd "$LOCAL_TRAIN_DIR"
-    bash ./run.sh --device cuda --valid_ratio 0.0 "$@"
+    if [[ "$USE_CONDA_FUXICTR" == "1" ]]; then
+        conda run -n fuxictr bash ./run.sh --device cuda "$@" --valid_ratio "$VALID_RATIO"
+    else
+        bash ./run.sh --device cuda "$@" --valid_ratio "$VALID_RATIO"
+    fi
 ) 2>&1 | tee "$RUN_LOG_FILE"
 
 BEST_CKPT_DIR="$(find "$RUN_CKPT_DIR" -maxdepth 1 -type d -name '*.best_model' | sort | tail -n 1)"
@@ -168,11 +178,15 @@ echo "Using checkpoint: $BEST_CKPT_DIR" | tee -a "$RUN_LOG_FILE"
     export EVAL_RESULT_PATH="$RESULT_DIR"
     export CUDA_VISIBLE_DEVICES="$GPU_ID"
     cd "$LOCAL_EVAL_DIR"
-    python infer.py
+    if [[ "$USE_CONDA_FUXICTR" == "1" ]]; then
+        conda run -n fuxictr python infer.py
+    else
+        python infer.py
+    fi
 ) 2>&1 | tee -a "$RUN_LOG_FILE"
 
 echo "Computing held-out test metrics" | tee -a "$RUN_LOG_FILE"
-python <<PY | tee -a "$RUN_LOG_FILE"
+"${PYTHON_RUN[@]}" <<PY | tee -a "$RUN_LOG_FILE"
 import json
 from pathlib import Path
 
@@ -180,7 +194,7 @@ import pyarrow.parquet as pq
 from sklearn.metrics import log_loss, roc_auc_score
 
 result_path = Path(r"$RESULT_DIR") / 'predictions.json'
-test_parquet = Path(r"$TEST_DIR") / 'test_0000.parquet'
+test_parquet = Path(r"$TEST_DIR") / 'test.parquet'
 
 with result_path.open('r', encoding='utf-8') as f:
     predictions = json.load(f)['predictions']

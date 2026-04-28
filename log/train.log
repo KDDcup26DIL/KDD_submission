@@ -1,71 +1,16 @@
-04/27/26 17:18:39 - 0:00:00 - Args: {'data_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/Wukong_hun_gpu0_260427_171827/data_train', 'schema_path': None, 'ckpt_dir': '/home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu0_260427_171827', 'log_dir': '/home/hun/KDD_Cup/KDD_submission/log', 'batch_size': 1024, 'lr': 0.0001, 'num_epochs': 10, 'patience': 5, 'seed': 42, 'device': 'cuda', 'num_workers': 8, 'buffer_batches': 20, 'train_ratio': 1.0, 'valid_ratio': 0.0, 'eval_every_n_steps': 0, 'seq_max_lens': 'seq_a:256,seq_b:256,seq_c:512,seq_d:512', 'd_model': 64, 'emb_dim': 64, 'num_queries': 2, 'num_wukong_layers': 3, 'num_heads': 4, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'use_time_buckets': True, 'rank_mixer_mode': 'full', 'use_rope': False, 'rope_base': 10000.0, 'loss_type': 'bce', 'focal_alpha': 0.1, 'focal_gamma': 2.0, 'sparse_lr': 0.05, 'sparse_weight_decay': 0.0, 'reinit_sparse_after_epoch': 1, 'reinit_cardinality_threshold': 0, 'emb_skip_threshold': 1000000, 'seq_id_threshold': 10000, 'ns_groups_json': '', 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 5, 'item_ns_tokens': 2, 'tf_events_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/Wukong_hun_gpu0_260427_171827/tf_events'}
-04/27/26 17:18:39 - 0:00:00 - Seq max_lens override: {'seq_a': 256, 'seq_b': 256, 'seq_c': 512, 'seq_d': 512}
-04/27/26 17:18:39 - 0:00:00 - Using Parquet data format (IterableDataset)
-04/27/26 17:18:39 - 0:00:00 - Row Group split: 86 train (88064 rows), 1 valid (141 rows)
-04/27/26 17:18:39 - 0:00:00 - PCVRParquetDataset: 88064 rows from 1 file(s), batch_size=1024, buffer_batches=20, shuffle=True
-04/27/26 17:18:39 - 0:00:00 - PCVRParquetDataset: 141 rows from 1 file(s), batch_size=1024, buffer_batches=0, shuffle=False
-04/27/26 17:18:39 - 0:00:00 - Parquet train: 88064 rows, valid: 141 rows, batch_size=1024, buffer_batches=20
-04/27/26 17:18:39 - 0:00:00 - No NS groups JSON found, using default: each feature as one group
-04/27/26 17:18:39 - 0:00:00 - PCVRWuKong created: tokens=7, layers=3, emb_dim=64, lcb=8, fmb=8
-04/27/26 17:18:40 - 0:00:01 - PCVRWuKong model created: num_ns=8, T=16, d_model=64, rank_mixer_mode=full
-04/27/26 17:18:40 - 0:00:01 - User NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19], [20], [21], [22], [23], [24], [25], [26], [27], [28], [29], [30], [31], [32], [33], [34], [35], [36], [37], [38], [39], [40], [41], [42], [43], [44], [45]]
-04/27/26 17:18:40 - 0:00:01 - Item NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13]]
-04/27/26 17:18:40 - 0:00:01 - Total parameters: 3,849,761
-04/27/26 17:18:40 - 0:00:01 - Sparse params: 101 tensors, 3,316,032 parameters (Adagrad lr=0.05)
-04/27/26 17:18:40 - 0:00:01 - Dense params: 80 tensors, 533,729 parameters (AdamW lr=0.0001)
-04/27/26 17:18:41 - 0:00:02 - PCVRWuKongRankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=1
-04/27/26 17:19:12 - 0:00:33 - Epoch 1, Average Loss: 0.10583318267450777
-04/27/26 17:19:13 - 0:00:34 - Epoch 1 Validation | AUC: 0.6785714285714286, LogLoss: 0.04569755867123604
-04/27/26 17:19:13 - 0:00:34 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu0_260427_171827/global_step86.layer=3.head=4.hidden=64.best_model/model.pt
-04/27/26 17:19:13 - 0:00:34 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:19:13 - 0:00:34 - Rebuilt Adagrad optimizer after epoch 1, restored optimizer state for 0 low-cardinality params
-04/27/26 17:19:29 - 0:00:50 - Epoch 2, Average Loss: 0.09910962752304799
-04/27/26 17:19:30 - 0:00:51 - Epoch 2 Validation | AUC: 0.5285714285714286, LogLoss: 0.047535788267850876
-04/27/26 17:19:30 - 0:00:51 - model earlyStopping counter: 1 / 5
-04/27/26 17:19:30 - 0:00:51 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:19:30 - 0:00:51 - Rebuilt Adagrad optimizer after epoch 2, restored optimizer state for 0 low-cardinality params
-04/27/26 17:19:46 - 0:01:07 - Epoch 3, Average Loss: 0.09874736543658168
-04/27/26 17:19:47 - 0:01:08 - Epoch 3 Validation | AUC: 0.5, LogLoss: 0.05009151250123978
-04/27/26 17:19:47 - 0:01:08 - model earlyStopping counter: 2 / 5
-04/27/26 17:19:47 - 0:01:08 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:19:47 - 0:01:08 - Rebuilt Adagrad optimizer after epoch 3, restored optimizer state for 0 low-cardinality params
-04/27/26 17:20:03 - 0:01:24 - Epoch 4, Average Loss: 0.0985542366844277
-04/27/26 17:20:04 - 0:01:25 - Epoch 4 Validation | AUC: 0.37857142857142856, LogLoss: 0.049572743475437164
-04/27/26 17:20:04 - 0:01:25 - model earlyStopping counter: 3 / 5
-04/27/26 17:20:04 - 0:01:25 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:20:04 - 0:01:25 - Rebuilt Adagrad optimizer after epoch 4, restored optimizer state for 0 low-cardinality params
-04/27/26 17:20:20 - 0:01:41 - Epoch 5, Average Loss: 0.09845026361561099
-04/27/26 17:20:21 - 0:01:42 - Epoch 5 Validation | AUC: 0.6857142857142857, LogLoss: 0.04913951829075813
-04/27/26 17:20:21 - 0:01:42 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu0_260427_171827/global_step86.layer=3.head=4.hidden=64.best_model
-04/27/26 17:20:21 - 0:01:42 - model earlyStopping counter reset!
-04/27/26 17:20:21 - 0:01:42 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu0_260427_171827/global_step430.layer=3.head=4.hidden=64.best_model/model.pt
-04/27/26 17:20:21 - 0:01:42 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:20:21 - 0:01:42 - Rebuilt Adagrad optimizer after epoch 5, restored optimizer state for 0 low-cardinality params
-04/27/26 17:20:37 - 0:01:58 - Epoch 6, Average Loss: 0.09797675448448159
-04/27/26 17:20:38 - 0:01:59 - Epoch 6 Validation | AUC: 0.3928571428571429, LogLoss: 0.04741894081234932
-04/27/26 17:20:38 - 0:01:59 - model earlyStopping counter: 1 / 5
-04/27/26 17:20:38 - 0:01:59 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:20:38 - 0:01:59 - Rebuilt Adagrad optimizer after epoch 6, restored optimizer state for 0 low-cardinality params
-04/27/26 17:20:54 - 0:02:15 - Epoch 7, Average Loss: 0.09771930469676506
-04/27/26 17:20:55 - 0:02:16 - Epoch 7 Validation | AUC: 0.5785714285714285, LogLoss: 0.04618951678276062
-04/27/26 17:20:55 - 0:02:16 - model earlyStopping counter: 2 / 5
-04/27/26 17:20:55 - 0:02:16 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:20:55 - 0:02:16 - Rebuilt Adagrad optimizer after epoch 7, restored optimizer state for 0 low-cardinality params
-04/27/26 17:21:11 - 0:02:32 - Epoch 8, Average Loss: 0.09752264653527459
-04/27/26 17:21:12 - 0:02:33 - Epoch 8 Validation | AUC: 0.65, LogLoss: 0.0467095822095871
-04/27/26 17:21:12 - 0:02:33 - model earlyStopping counter: 3 / 5
-04/27/26 17:21:12 - 0:02:33 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:21:12 - 0:02:33 - Rebuilt Adagrad optimizer after epoch 8, restored optimizer state for 0 low-cardinality params
-04/27/26 17:21:28 - 0:02:49 - Epoch 9, Average Loss: 0.09719987945674463
-04/27/26 17:21:29 - 0:02:50 - Epoch 9 Validation | AUC: 0.3857142857142857, LogLoss: 0.0464029498398304
-04/27/26 17:21:29 - 0:02:50 - model earlyStopping counter: 4 / 5
-04/27/26 17:21:29 - 0:02:50 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:21:29 - 0:02:50 - Rebuilt Adagrad optimizer after epoch 9, restored optimizer state for 0 low-cardinality params
-04/27/26 17:21:45 - 0:03:06 - Epoch 10, Average Loss: 0.09744076205547465
-04/27/26 17:21:46 - 0:03:07 - Epoch 10 Validation | AUC: 0.7285714285714286, LogLoss: 0.04665469378232956
-04/27/26 17:21:46 - 0:03:07 - Removed old best_model dir: /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu0_260427_171827/global_step430.layer=3.head=4.hidden=64.best_model
-04/27/26 17:21:46 - 0:03:07 - model earlyStopping counter reset!
-04/27/26 17:21:46 - 0:03:07 - Saved checkpoint to /home/hun/KDD_Cup/KDD_submission/checkpoint/Wukong_hun_gpu0_260427_171827/global_step860.layer=3.head=4.hidden=64.best_model/model.pt
-04/27/26 17:21:46 - 0:03:07 - Re-initialized 101 high-cardinality embedding tensors (threshold=0)
-04/27/26 17:21:46 - 0:03:07 - Rebuilt Adagrad optimizer after epoch 10, restored optimizer state for 0 low-cardinality params
-04/27/26 17:21:46 - 0:03:07 - Training complete!
+04/28/26 13:09:41 - 0:00:00 - Args: {'data_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/dcnv2_hun_gpu6_260428_130937/data_train', 'schema_path': None, 'ckpt_dir': '/home/hun/KDD_Cup/KDD_submission/checkpoint/dcnv2_hun_gpu6_260428_130937', 'log_dir': '/home/hun/KDD_Cup/KDD_submission/log', 'batch_size': 256, 'lr': 0.0001, 'num_epochs': 10, 'patience': 5, 'seed': 42, 'device': 'cuda', 'num_workers': 8, 'buffer_batches': 20, 'train_ratio': 1.0, 'valid_ratio': 0.1111217733422896, 'eval_every_n_steps': 0, 'seq_max_lens': 'seq_a:256,seq_b:256,seq_c:512,seq_d:512', 'd_model': 64, 'emb_dim': 64, 'num_queries': 2, 'num_dcnv2_layers': 2, 'num_heads': 4, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'use_time_buckets': True, 'rank_mixer_mode': 'full', 'use_rope': False, 'rope_base': 10000.0, 'loss_type': 'bce', 'focal_alpha': 0.1, 'focal_gamma': 2.0, 'sparse_lr': 0.05, 'sparse_weight_decay': 0.0, 'reinit_sparse_after_epoch': 1, 'reinit_cardinality_threshold': 0, 'emb_skip_threshold': 1000000, 'seq_id_threshold': 10000, 'ns_groups_json': '', 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 5, 'item_ns_tokens': 2, 'tf_events_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/dcnv2_hun_gpu6_260428_130937/tf_events'}
+04/28/26 13:09:41 - 0:00:00 - Seq max_lens override: {'seq_a': 256, 'seq_b': 256, 'seq_c': 512, 'seq_d': 512}
+04/28/26 13:09:41 - 0:00:00 - Using Parquet data format (IterableDataset)
+04/28/26 13:09:42 - 0:00:01 - Row Group split: 9263 train (9484324 rows), 1158 valid (1185540 rows)
+04/28/26 13:09:42 - 0:00:01 - PCVRParquetDataset: 9484324 rows from 2 file(s), batch_size=256, buffer_batches=20, shuffle=True
+04/28/26 13:09:43 - 0:00:02 - PCVRParquetDataset: 1185540 rows from 2 file(s), batch_size=256, buffer_batches=0, shuffle=False
+04/28/26 13:09:43 - 0:00:02 - Parquet train: 9484324 rows, valid: 1185540 rows, batch_size=256, buffer_batches=20
+04/28/26 13:09:43 - 0:00:02 - No NS groups JSON found, using default: each feature as one group
+04/28/26 13:09:43 - 0:00:02 - PCVRDCNv2 created: input_dim=448, cross_layers=2, d_model=64, emb_dim=64
+04/28/26 13:09:45 - 0:00:04 - PCVRDCNv2 model created: num_ns=8, T=16, d_model=64, rank_mixer_mode=full
+04/28/26 13:09:45 - 0:00:04 - User NS groups: [[0]]
+04/28/26 13:09:45 - 0:00:04 - Item NS groups: [[0]]
+04/28/26 13:09:45 - 0:00:04 - Total parameters: 13,379,137
+04/28/26 13:09:45 - 0:00:04 - Sparse params: 6 tensors, 12,800,896 parameters (Adagrad lr=0.05)
+04/28/26 13:09:45 - 0:00:04 - Dense params: 42 tensors, 578,241 parameters (AdamW lr=0.0001)
+04/28/26 13:09:45 - 0:00:04 - PCVRDCNv2RankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=1

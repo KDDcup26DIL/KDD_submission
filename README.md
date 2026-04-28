@@ -4,17 +4,22 @@
 
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
-| DCNv2 | toss tiny 10 epoch [00:06:16] | 0.625425 | 0.100677 | 
-| HyFormer | toss tiny 10 epoch [00:12:53] | 0.602661 | 0.100119 | 
-| WuKong | toss tiny 10 epoch [00:03:07] | 0.634248 | 0.099390 |
+| DCNv2 | toss tiny 10 epoch | 0.647718 | 0.098608 | 
+| WuKong | toss tiny 10 epoch | 0.675493 | 0.097939 |
+| HyFormer | toss tiny 10 epoch | 0.596690 | 0.100134 | 
+| DCNv2 | frappe 10 epoch | 0.583559 | 4.146001 |
+| WuKong | frappe 10 epoch | 0.604436 | 1.864935 |
+| HyFormer | frappe 10 epoch | 0.571346 | 0.619358 |
+
 
 # Submission Score
 
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
 | DCNv2 | 1 epoch [00:13:39] | 0.790978 | - | 
-| HyFormer | 1 epoch [01:03:51] | 0.797713 | - | 
 | WuKong | 1 epoch [00:13:11] | 0.791163 | - |
+| HyFormer | 1 epoch [01:03:51] | 0.797713 | - | 
+
 
 # 1. Environment 설정
 
@@ -27,11 +32,25 @@ conda activate <env_name>
 # 2. Dataset Download
 ```bash
 cd data
-gdown --fuzzy "https://drive.google.com/file/d/1p6H-987ZFKEWue-Vpi9-PUwNd8L75STR/view?usp=sharing"
-unzip toss.zip
+gdown --fuzzy "https://drive.google.com/file/d/1rC8pwPlPYboVD__KGkS93Om2gmBfkop6/view?usp=sharing"
+unzip toss_v2.zip
+
+gdown --fuzzy "https://drive.google.com/file/d/1aDBdkknJa2cLeGz3ItDEr5oxSTW1LlCK/view?usp=sharing"
+unzip frappe.zip
 ```
 - gdown으로 Google Drive 파일 다운로드
-- toss.zip 압축 해제 후 parquet 데이터 사용
+- dataset은 `data/{dataset_name}/` 아래에 다음 파일명으로 배치
+
+```
+data/
+ └── {dataset_name}/
+      ├── train.parquet
+      ├── valid.parquet
+      ├── test.parquet
+      └── schema.json
+```
+
+- `schema.json`은 `data/{dataset_name}/schema.json`을 우선 사용하고, 없으면 `data/schema.json`을 사용
 
 # 3. 모델 폴더 생성
 ```bash
@@ -62,15 +81,19 @@ unzip toss.zip
 - num_ns attribute
 
 # 5. Local evaluation
+`run.local.sh`는 `train.py`에 `train.parquet + valid.parquet`만 전달하고,
+`test.parquet`는 학습 완료 후 `infer.py`와 metric 계산에만 사용한다.
+
 ```bash
-./run.local.sh {model_name} {gpu_id} \
+./run.local.sh {model_name} {gpu_id} {dataset_name} \
   --num_epochs 1 \
   --batch_size 64
 ```
 
 example
 ```bash
-./run.local.sh dcnv2 6 --num_epochs 1 --batch_size 64
+./run.local.sh dcnv2 6 toss --num_epochs 1 --batch_size 64
+./run.local.sh hyformer 0 frappe --num_epochs 1 --batch_size 256
 ```
 
 # 6. Submission 파일 생성

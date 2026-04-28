@@ -1,0 +1,55 @@
+04/28/26 13:02:15 - 0:00:00 - Args: {'data_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/hyformer_hun_gpu6_260428_130211/data_train', 'schema_path': None, 'ckpt_dir': '/home/hun/KDD_Cup/KDD_submission/checkpoint/hyformer_hun_gpu6_260428_130211', 'log_dir': '/home/hun/KDD_Cup/KDD_submission/log', 'batch_size': 256, 'lr': 0.0001, 'num_epochs': 10, 'patience': 5, 'seed': 42, 'device': 'cuda', 'num_workers': 8, 'buffer_batches': 20, 'train_ratio': 1.0, 'valid_ratio': 0.1111217733422896, 'eval_every_n_steps': 0, 'seq_max_lens': 'seq_a:256,seq_b:256,seq_c:512,seq_d:512', 'd_model': 64, 'emb_dim': 64, 'num_queries': 2, 'num_hyformer_blocks': 2, 'num_heads': 4, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'use_time_buckets': True, 'rank_mixer_mode': 'full', 'use_rope': False, 'rope_base': 10000.0, 'loss_type': 'bce', 'focal_alpha': 0.1, 'focal_gamma': 2.0, 'sparse_lr': 0.05, 'sparse_weight_decay': 0.0, 'reinit_sparse_after_epoch': 1, 'reinit_cardinality_threshold': 0, 'emb_skip_threshold': 1000000, 'seq_id_threshold': 10000, 'ns_groups_json': '', 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 5, 'item_ns_tokens': 2, 'tf_events_dir': '/home/hun/KDD_Cup/KDD_submission/local_runs/hyformer_hun_gpu6_260428_130211/tf_events'}
+04/28/26 13:02:15 - 0:00:00 - Seq max_lens override: {'seq_a': 256, 'seq_b': 256, 'seq_c': 512, 'seq_d': 512}
+04/28/26 13:02:15 - 0:00:00 - Using Parquet data format (IterableDataset)
+04/28/26 13:02:16 - 0:00:00 - Row Group split: 9263 train (9484324 rows), 1158 valid (1185540 rows)
+04/28/26 13:02:16 - 0:00:01 - PCVRParquetDataset: 9484324 rows from 2 file(s), batch_size=256, buffer_batches=20, shuffle=True
+04/28/26 13:02:16 - 0:00:01 - PCVRParquetDataset: 1185540 rows from 2 file(s), batch_size=256, buffer_batches=0, shuffle=False
+04/28/26 13:02:17 - 0:00:02 - Parquet train: 9484324 rows, valid: 1185540 rows, batch_size=256, buffer_batches=20
+04/28/26 13:02:17 - 0:00:02 - No NS groups JSON found, using default: each feature as one group
+04/28/26 13:02:17 - 0:00:02 - RankMixerNSTokenizer: 1 fids, total_emb_dim=64, chunk_dim=13, num_ns_tokens=5, pad=1
+04/28/26 13:02:17 - 0:00:02 - RankMixerNSTokenizer: 1 fids, total_emb_dim=64, chunk_dim=32, num_ns_tokens=2, pad=0
+04/28/26 13:02:17 - 0:00:02 - emb_skip_threshold=1000000: user_ns skipped 1/1 features
+04/28/26 13:02:17 - 0:00:02 - emb_skip_threshold=1000000: item_ns skipped 1/1 features
+04/28/26 13:02:18 - 0:00:03 - PCVRHyFormer model created: num_ns=8, T=16, d_model=64, rank_mixer_mode=full
+04/28/26 13:02:18 - 0:00:03 - User NS groups: [[0]]
+04/28/26 13:02:18 - 0:00:03 - Item NS groups: [[0]]
+04/28/26 13:02:18 - 0:00:03 - Total parameters: 2,053,697
+04/28/26 13:02:18 - 0:00:03 - Sparse params: 5 tensors, 4,864 parameters (Adagrad lr=0.05)
+04/28/26 13:02:18 - 0:00:03 - Dense params: 380 tensors, 2,048,833 parameters (AdamW lr=0.0001)
+04/28/26 13:02:19 - 0:00:04 - PCVRHyFormerRankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=1
+Start training (PCVRHyFormer)
+  0%|          | 0/37049 [00:00<?, ?it/s]  0%|          | 0/37049 [00:03<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/train.py", line 362, in <module>
+    main()
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/train.py", line 355, in main
+    trainer.train()
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/trainer.py", line 304, in train
+    loss = self._train_step(batch)
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/trainer.py", line 412, in _train_step
+    logits = self.model(model_input)  # (B, 1)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/model.py", line 1637, in forward
+    user_ns = self.user_ns_tokenizer(inputs.user_int_feats)   # (B, num_user_groups, D)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/hun/KDD_Cup/KDD_submission/hyformer/hyformer_local/model_training/model.py", line 1187, in forward
+    tokens.append(F.silu(proj(chunk)).unsqueeze(1))  # (B, 1, d_model)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/container.py", line 219, in forward
+    input = module(input)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/hun/miniconda3/envs/fuxictr/lib/python3.8/site-packages/torch/nn/modules/linear.py", line 117, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: mat1 and mat2 must have the same dtype, but got Long and Float
