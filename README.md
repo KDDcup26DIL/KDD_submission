@@ -80,6 +80,12 @@ unzip frappe.zip
 
 gdown --fuzzy "https://drive.google.com/file/d/1TdighSNhGYLPRw6junzGJcB5aoyw8jkc/view?usp=sharing"
 unzip criteo.zip
+
+gdown --fuzzy "https://drive.google.com/file/d/1hcXXjX0jErn47Ya9PXulw6H-N0s9MYQJ/view?usp=sharing"
+unzip Avazu.zip
+
+gdown --fuzzy "https://drive.google.com/file/d/1f9V-35bMMHTBtDQfA-6N16dJEZtwdqe2/view?usp=sharing"
+unzip iPinYou.zip
 ```
 - gdown으로 Google Drive 파일 다운로드
 - dataset은 `data/{dataset_name}/` 아래에 다음 파일명으로 배치
