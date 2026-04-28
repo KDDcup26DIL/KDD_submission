@@ -2,11 +2,12 @@
 
 # Experiments
 
-# Toss Tiny (110,257 row, 279.0 MB)
+## Toss Tiny (110,257 row, 279.0 MB)
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
 | RF | toss tiny 10 epoch | 0.556976 | 0.104141 |
 | MLP | toss tiny 10 epoch | 0.620905 | 0.100910 | 
+| LSTM | toss tiny 10 epoch | 0.576957 | 0.105185 |
 | DCNv2 | toss tiny 10 epoch | 0.647718 | 0.098608 | 
 | WuKong | toss tiny 10 epoch | 0.675493 | 0.097939 |
 | HyFormer | toss tiny 10 epoch | 0.596690 | 0.100134 |
@@ -28,6 +29,9 @@
 ## Criteo (3,951,801 row, 141.8 MB)
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
+| RF | criteo tiny 10 epoch | 0.710997 | 0.137791 |
+| MLP | criteo tiny 10 epoch | 0.718471 | 0.136913 |
+| LSTM | criteo tiny 10 epoch | 
 | DCNv2 | criteo tiny 10 epoch | 0.716244 | 0.137127 |
 | WuKong | criteo tiny 10 epoch | 0.718297 | 0.136963 | 
 | HyFormer | criteo tiny 10 epoch | 
