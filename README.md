@@ -64,7 +64,7 @@
 | DCNv2 | 1 epoch [00:13:39] | 0.790978 | - | 
 | WuKong | 1 epoch [00:13:11] | 0.791163 | - |
 | HyFormer | 1 epoch [01:03:51] | 0.797713 | - | 
-| EulerNet | 1 epoch [00:00:00] |  | - |
+| EulerNet | 1 epoch [00:00:00] | 0.714584 | - |
 | SCV | 1 epoch [00:00:00] |  | - | 
 
 
