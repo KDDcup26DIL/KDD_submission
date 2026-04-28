@@ -31,7 +31,7 @@
 | --- | --- | --- | --- |
 | RF | criteo tiny 10 epoch | 0.710997 | 0.137791 |
 | MLP | criteo tiny 10 epoch | 0.718471 | 0.136913 |
-| LSTM | criteo tiny 10 epoch | 
+| LSTM | criteo tiny 10 epoch | 0.717567 | 0.137013 |
 | DCNv2 | criteo tiny 10 epoch | 0.716244 | 0.137127 |
 | WuKong | criteo tiny 10 epoch | 0.718297 | 0.136963 | 
 | HyFormer | criteo tiny 10 epoch | 
@@ -43,6 +43,7 @@
 | --- | --- | --- | --- |
 | RF | 1 epoch |  |  |
 | MLP | 1 epoch |  |  | 
+| LSTM | 1 epoch |
 | DCNv2 | 1 epoch |  |  | 
 | WuKong | 1 epoch |  |  |
 | HyFormer | 1 epoch |  |  |
