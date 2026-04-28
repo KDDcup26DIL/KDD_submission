@@ -38,7 +38,7 @@
 | EulerNet | criteo tiny 10 epoch | 0.685526 | 0.139992 |
 | SCV | criteo tiny 10 epoch | 0. | 0. |
 
-# Avazu (28,300,276 row, 1.2 G)
+# Avazu (5,658,206 row, 273 MB)
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
 | RF | 1 epoch |  |  |
@@ -86,7 +86,7 @@ unzip frappe.zip
 gdown --fuzzy "https://drive.google.com/file/d/1TdighSNhGYLPRw6junzGJcB5aoyw8jkc/view?usp=sharing"
 unzip criteo.zip
 
-gdown --fuzzy "https://drive.google.com/file/d/1hcXXjX0jErn47Ya9PXulw6H-N0s9MYQJ/view?usp=sharing"
+gdown --fuzzy "https://drive.google.com/file/d/1GQHmnzjoajfZHoY_bLdP51wg3QrBLWxG/view?usp=sharing"
 unzip Avazu.zip
 
 gdown --fuzzy "https://drive.google.com/file/d/1f9V-35bMMHTBtDQfA-6N16dJEZtwdqe2/view?usp=sharing"
