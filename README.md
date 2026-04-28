@@ -38,7 +38,7 @@
 | EulerNet(b64) | criteo tiny 10 epoch | 0.685526 | 0.139992 |
 | SCV(b64) | criteo tiny 10 epoch | 0.686393 | 0.141272 |
 
-# Avazu (5,658,206 row, 273 MB)
+## Avazu (5,658,206 row, 273 MB)
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
 | RF | 1 epoch |  |  |
@@ -50,7 +50,7 @@
 | EulerNet(b64) | 1 epoch | 0.758946 | 0.370776 |
 | SCV | 1 epoch |  |  |
 
-# iPinYou (15,395,258 row, 519 MB)
+## iPinYou (15,395,258 row, 519 MB)
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
 
