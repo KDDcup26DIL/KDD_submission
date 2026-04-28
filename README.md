@@ -32,7 +32,7 @@
 | WuKong | criteo tiny 10 epoch | 0.718297 | 0.136963 | 
 | HyFormer | criteo tiny 10 epoch | 
 | EulerNet | criteo tiny 10 epoch | 0.685526 | 0.139992 |
-| SCV | criteo tiny 10 epoch | 0.716244 | 0.137127 |
+| SCV | criteo tiny 10 epoch | 0. | 0. |
 
 # Avazu (28,300,276 row, 1.2 G)
 | model | settings | AUC | LogLoss |
