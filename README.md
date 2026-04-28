@@ -4,14 +4,22 @@
 
 | model | settings | AUC | LogLoss |
 | --- | --- | --- | --- |
+| RF | toss tiny 10 epoch | 0.556976 | 0.104141 |
+| MLP | toss tiny 10 epoch | 0.620905 | 0.100910 | 
 | DCNv2 | toss tiny 10 epoch | 0.647718 | 0.098608 | 
 | WuKong | toss tiny 10 epoch | 0.675493 | 0.097939 |
 | HyFormer | toss tiny 10 epoch | 0.596690 | 0.100134 | 
 | SCV | toss tiny 10 epoch | 0.636060 | 0.107081 |
+
+| model | settings | AUC | LogLoss |
+| --- | --- | --- | --- |
 | DCNv2 | frappe 10 epoch | 0.583559 | 4.146001 |
 | WuKong | frappe 10 epoch | 0.604436 | 1.864935 |
 | HyFormer | frappe 10 epoch | 0.571346 | 0.619358 |
 | EulerNet | frappe 10 epoch | 0.596707 | 3.624638 |
+
+| model | settings | AUC | LogLoss |
+| --- | --- | --- | --- |
 | DCNv2 | criteo tiny 10 epoch | 0.716244 | 0.137127 |
 | WuKong | criteo tiny 10 epoch | 0.718297 | 0.136963 | 
 | HyFormer | criteo tiny 10 epoch | 

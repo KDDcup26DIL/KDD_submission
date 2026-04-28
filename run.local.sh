@@ -133,7 +133,7 @@ echo "  valid: $SOURCE_VALID_PARQUET"
 echo "  test : $SOURCE_TEST_PARQUET"
 
 VALID_RATIO="$(
-"${PYTHON_RUN[@]}" - "$SOURCE_TRAIN_PARQUET" "$SOURCE_VALID_PARQUET" <<'PY'
+"${PYTHON_RUN[@]}" -c '
 import sys
 import pyarrow.parquet as pq
 
@@ -146,7 +146,7 @@ if train_rgs <= 0:
 if valid_rgs <= 0:
     raise SystemExit(f"valid.parquet has no row groups: {valid_path}")
 print(format(valid_rgs / total_rgs, ".17g"))
-PY
+' "$SOURCE_TRAIN_PARQUET" "$SOURCE_VALID_PARQUET"
 )"
 echo "Computed validation split ratio: $VALID_RATIO"
 
@@ -186,22 +186,22 @@ echo "Using checkpoint: $BEST_CKPT_DIR" | tee -a "$RUN_LOG_FILE"
 ) 2>&1 | tee -a "$RUN_LOG_FILE"
 
 echo "Computing held-out test metrics" | tee -a "$RUN_LOG_FILE"
-"${PYTHON_RUN[@]}" <<PY | tee -a "$RUN_LOG_FILE"
+"${PYTHON_RUN[@]}" -c '
 import json
 from pathlib import Path
 
 import pyarrow.parquet as pq
 from sklearn.metrics import log_loss, roc_auc_score
 
-result_path = Path(r"$RESULT_DIR") / 'predictions.json'
-test_parquet = Path(r"$TEST_DIR") / 'test.parquet'
+result_path = Path(r"'"$RESULT_DIR"'") / "predictions.json"
+test_parquet = Path(r"'"$TEST_DIR"'") / "test.parquet"
 
-with result_path.open('r', encoding='utf-8') as f:
-    predictions = json.load(f)['predictions']
+with result_path.open("r", encoding="utf-8") as f:
+    predictions = json.load(f)["predictions"]
 
-table = pq.read_table(test_parquet, columns=['user_id', 'label_type'])
-user_ids = table.column('user_id').to_pylist()
-raw_labels = table.column('label_type').to_pylist()
+table = pq.read_table(test_parquet, columns=["user_id", "label_type"])
+user_ids = table.column("user_id").to_pylist()
+raw_labels = table.column("label_type").to_pylist()
 labels = [1 if value == 2 else 0 for value in raw_labels]
 
 y_true = []
@@ -211,27 +211,27 @@ for user_id, label in zip(user_ids, labels):
     if pred is None:
         pred = predictions.get(user_id)
     if pred is None:
-        raise KeyError(f'Missing prediction for user_id={user_id}')
+        raise KeyError(f"Missing prediction for user_id={user_id}")
     y_true.append(label)
     y_prob.append(float(pred))
 
 valid_pairs = [(yt, yp) for yt, yp in zip(y_true, y_prob) if yp == yp]
 n_nan = len(y_prob) - len(valid_pairs)
 if n_nan > 0:
-    print(f'Filtered {n_nan}/{len(y_prob)} NaN predictions before metric computation')
+    print(f"Filtered {n_nan}/{len(y_prob)} NaN predictions before metric computation")
 
 if not valid_pairs:
     auc = 0.0
-    ll = float('inf')
+    ll = float("inf")
 else:
     y_true = [yt for yt, _ in valid_pairs]
     y_prob = [yp for _, yp in valid_pairs]
     auc = roc_auc_score(y_true, y_prob) if len(set(y_true)) > 1 else 0.0
     ll = log_loss(y_true, y_prob, labels=[0, 1])
 
-print(f'Local test AUC: {auc:.6f}')
-print(f'Local test LogLoss: {ll:.6f}')
-PY
+print(f"Local test AUC: {auc:.6f}")
+print(f"Local test LogLoss: {ll:.6f}")
+' | tee -a "$RUN_LOG_FILE"
 
 echo "Run log: $RUN_LOG_FILE"
 echo "Checkpoint root: $RUN_CKPT_DIR"
