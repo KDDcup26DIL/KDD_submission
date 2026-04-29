@@ -13,6 +13,7 @@
 | HyFormer | toss tiny 10 epoch | 0.596690 | 0.100134 |
 | EulerNet(b64) | toss tiny 10 epoch | 0.664916 | 0.100351 |
 | SCV(b64) | toss tiny 10 epoch | 0.636060 | 0.107081 |
+| FinalMLP | toss tiny 10 epoch | 0.597006 | 0.101975 |
 
 ## Frappe (84,373 row, 6.8 MB)
 | model | settings | AUC | LogLoss |
@@ -37,6 +38,7 @@
 | HyFormer | criteo tiny 10 epoch | 0.681548 | 0.137037 |
 | EulerNet(b64) | criteo tiny 10 epoch | 0.685526 | 0.139992 |
 | SCV(b64) | criteo tiny 10 epoch | 0.686393 | 0.141272 |
+| FinalMLP | criteo tiny 10 epoch | 0.705162 | 0.138561 |
 
 ## Avazu (5,658,206 row, 273 MB)
 | model | settings | AUC | LogLoss |
