@@ -48,7 +48,7 @@
 | MLP | 1 epoch |  |  | 
 | LSTM | 1 epoch |
 | DCNv2 | 1 epoch |  |  | 
-| WuKong | 1 epoch |  |  |
+| WuKong | 1 epoch | 0.759367 | 0.369280 |
 | HyFormer | 1 epoch |  |  |
 | EulerNet(b64) | 1 epoch | 0.758946 | 0.370776 |
 | SCV | 1 epoch |  |  |
