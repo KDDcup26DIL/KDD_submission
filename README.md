@@ -34,7 +34,7 @@
 | LSTM | criteo tiny 10 epoch | 0.717567 | 0.137013 |
 | DCNv2 | criteo tiny 10 epoch | 0.716244 | 0.137127 |
 | WuKong | criteo tiny 10 epoch | 0.718297 | 0.136963 | 
-| HyFormer | criteo tiny 10 epoch | 
+| HyFormer | criteo tiny 10 epoch | 0.681548 | 0.137037 |
 | EulerNet(b64) | criteo tiny 10 epoch | 0.685526 | 0.139992 |
 | SCV(b64) | criteo tiny 10 epoch | 0.686393 | 0.141272 |
 
