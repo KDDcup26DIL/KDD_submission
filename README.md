@@ -26,6 +26,7 @@
 | HyFormer | frappe 10 epoch | 0.571346 | 0.619358 |
 | EulerNet(b64) | frappe 10 epoch | 0.596707 | 3.624638 |
 | SCV(b64) | frappe 10 epoch | 0.567228 | 6.251460 |
+| FinalMLP | frappe 10 epoch | 0.558044 | 5.592541 |
 
 ## Criteo (3,951,801 row, 141.8 MB)
 | model | settings | AUC | LogLoss |
