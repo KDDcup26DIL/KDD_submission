@@ -221,7 +221,6 @@ class RoPEMultiheadAttention(nn.Module):
             else:
                 sdpa_attn_mask = bool_attn
 
-        ### add sample ###
         fully_masked = None
         if sdpa_attn_mask is not None:
             fully_masked = ~sdpa_attn_mask.any(dim=-1, keepdim=True)
@@ -229,7 +228,6 @@ class RoPEMultiheadAttention(nn.Module):
                 # SDPA can emit NaN gradients when a query has no valid key.
                 # Attend to a dummy first key, then zero the affected outputs.
                 sdpa_attn_mask = sdpa_attn_mask.masked_fill(fully_masked, True)
-        ### add sample ###
 
         # 5. Scaled Dot-Product Attention
         dropout_p = self.dropout if self.training else 0.0
@@ -238,11 +236,9 @@ class RoPEMultiheadAttention(nn.Module):
             attn_mask=sdpa_attn_mask,
             dropout_p=dropout_p,
         )  # (B, num_heads, Lq, head_dim)
-
-        ### add sample ###
         if fully_masked is not None and fully_masked.any():
             out = out.masked_fill(fully_masked, 0.0)
-        ### add sample ###
+
 
         # Replace NaN from all-padding softmax with 0 (zero vectors preserve original input via residual)
         out = torch.nan_to_num(out, nan=0.0)
@@ -1419,7 +1415,6 @@ class PCVRHyFormer(nn.Module):
             )
             for _ in range(num_hyformer_blocks)
         ])
-        self.block_q_gates = nn.Parameter(torch.zeros(num_hyformer_blocks))
 
         # ================== RoPE ==================
         if use_rope:
@@ -1616,7 +1611,7 @@ class PCVRHyFormer(nn.Module):
         curr_seqs = seq_tokens_list
         curr_masks = seq_masks_list
 
-        for block_idx, block in enumerate(self.blocks):
+        for block in self.blocks:
             # Precompute RoPE cos/sin for each sequence
             rope_cos_list = None
             rope_sin_list = None
@@ -1630,8 +1625,7 @@ class PCVRHyFormer(nn.Module):
                     rope_cos_list.append(cos)
                     rope_sin_list.append(sin)
 
-            prev_qs = curr_qs
-            new_qs, curr_ns, curr_seqs, curr_masks = block(
+            curr_qs, curr_ns, curr_seqs, curr_masks = block(
                 q_tokens_list=curr_qs,
                 ns_tokens=curr_ns,
                 seq_tokens_list=curr_seqs,
@@ -1639,11 +1633,6 @@ class PCVRHyFormer(nn.Module):
                 rope_cos_list=rope_cos_list,
                 rope_sin_list=rope_sin_list,
             )
-            q_gate = torch.sigmoid(self.block_q_gates[block_idx])
-            curr_qs = [
-                q_prev + q_gate * (q_new - q_prev)
-                for q_prev, q_new in zip(prev_qs, new_qs)
-            ]
 
         # Output: concatenate all sequences' Q tokens then project via MLP
         B = curr_qs[0].shape[0]

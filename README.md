@@ -60,8 +60,15 @@
 | EulerNet(b64) | 1 epoch | 0.758946 | 0.370776 |
 | SCV | 1 epoch |  |  |
 
-<!-- ## Sample (1,000 row, 40.1MB) -->
+## Sample (1,000 row, 40.1MB)
+KDD sample data.
 
+| model | settings | AUC | LogLoss |
+| --- | --- | --- | --- |
+| DCNv2 | 10 epoch | 0.694129 | 0.534266 |
+| WuKong | 10 epoch | 0.515152 | 0.387896 |
+| HyFormer | block 4, 10 epoch | 0.641098 | 0.345131 | 
+| HyFormerResidualGate | block 4, 10 epoch | 0.670455 | 0.340754 |
 
 # Submission Score
 

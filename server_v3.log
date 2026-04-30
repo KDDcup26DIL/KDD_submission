@@ -1,0 +1,263 @@
+2026-04-30 18:24:48.304 ##########################################################################
+
+2026-04-30 18:24:48.304 ############################ TAIJI JOB START #############################
+
+2026-04-30 18:24:48.304 ##########################################################################
+
+2026-04-30 18:24:48.324 cp: cannot stat './/*': No such file or directory
+
+2026-04-30 18:24:48.332 passwd: password expiry information changed.
+
+2026-04-30 18:24:53.786 Complete setting taiji user.
+
+2026-04-30 18:24:59.596 update taiji environ ...
+
+2026-04-30 18:24:59.596 show args: --appName=95d1b2ad9dca2466019dddeb53002bf1 --projectName=external-ams-competition-2025 --module=pytorch --script=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/run.sh --script_archive=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/utils.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/trainer.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/train.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/ns_groups.json,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/model.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/dataset.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/.taiji_run.json --script_args=
+
+2026-04-30 18:24:59.687 INFO: ===begin to run init cmd===
+
+2026-04-30 18:24:59.687 INFO: Export env: RUNTIME_SCRIPT_DIR=/home/taiji/dl/runtime/script
+
+2026-04-30 18:24:59.694 INFO: Export env: RUNTIME_SCRIPT_SHARE_DIR=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/95d1b2ad9dca2466019dddeb53002bf1/pipeline/95d1b2ad9dca2466019dddeb53002bf1/share
+
+2026-04-30 18:24:59.694 INFO: script_path :/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/run.sh
+
+2026-04-30 18:24:59.699 INFO: Success copy to /home/taiji/dl/runtime/script/run.sh
+
+2026-04-30 18:24:59.703 INFO: Success copy to /home/taiji/dl/runtime/script/utils.py
+
+2026-04-30 18:24:59.709 INFO: Success copy to /home/taiji/dl/runtime/script/trainer.py
+
+2026-04-30 18:24:59.713 INFO: Success copy to /home/taiji/dl/runtime/script/train.py
+
+2026-04-30 18:24:59.723 INFO: Success copy to /home/taiji/dl/runtime/script/ns_groups.json
+
+2026-04-30 18:24:59.728 INFO: Success copy to /home/taiji/dl/runtime/script/model.py
+
+2026-04-30 18:24:59.732 INFO: Success copy to /home/taiji/dl/runtime/script/dataset.py
+
+2026-04-30 18:24:59.736 INFO: Success copy to /home/taiji/dl/runtime/script/.taiji_run.json
+
+2026-04-30 18:24:59.736 INFO: python path: /home/taiji/dl/runtime/script/utils.py:/home/taiji/dl/runtime/script/trainer.py:/home/taiji/dl/runtime/script/train.py:/home/taiji/dl/runtime/script/ns_groups.json:/home/taiji/dl/runtime/script/model.py:/home/taiji/dl/runtime/script/dataset.py:/home/taiji/dl/runtime/script/.taiji_run.json
+
+2026-04-30 18:24:59.737 INFO: Export env: TRAIN_CKPT_PATH=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/95d1b2ad9dca2466019dddeb53002bf1/ckpt
+
+2026-04-30 18:24:59.737 INFO: Export env: TRAIN_TF_EVENTS_PATH=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/95d1b2ad9dca2466019dddeb53002bf1/events
+
+2026-04-30 18:24:59.737 INFO: Export env: TRAIN_DATA_PATH=/data_ams/academic_training_data
+
+2026-04-30 18:24:59.737 INFO: Export env: TRAIN_USER=ams_2026_1029735554728158628
+
+2026-04-30 18:24:59.737 INFO: Export env: TRAIN_LOG_PATH=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/95d1b2ad9dca2466019dddeb53002bf1/log
+
+2026-04-30 18:24:59.737 INFO: Export env: TRAIN_CACHE_PATH=/apdcephfs_fsgm2/share_305170765/angel/groups/95/ams_2026_1029735554728158628
+
+2026-04-30 18:24:59.737 INFO: Export env: USER_CACHE_PATH=/apdcephfs_fsgm2/share_305170765/angel/groups/95/ams_2026_1029735554728158628
+
+2026-04-30 18:24:59.737 INFO: Export env: NP_BD_FLOW_PROJ=7891111
+
+2026-04-30 18:24:59.747 touch: cannot touch '/data/initCmdCompletedFile': No such file or directory
+
+2026-04-30 18:24:59.747 initCmd failed
+
+2026-04-30 18:24:59.748 [TAIJI] Starting sshd
+
+2026-04-30 18:25:00.770 [TAIJI] sshd started
+
+2026-04-30 18:25:00.770 [TAIJI] waiting for all peers to be ready...
+
+2026-04-30 18:25:02.059 Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.4.241-1-tlinux4-0017.7 x86_64)
+
+2026-04-30 18:25:02.059
+
+2026-04-30 18:25:02.059 * Documentation: https://help.ubuntu.com
+
+2026-04-30 18:25:02.059 * Management: https://landscape.canonical.com
+
+2026-04-30 18:25:02.059 * Support: https://ubuntu.com/pro
+
+2026-04-30 18:25:02.059
+
+2026-04-30 18:25:02.059 This system has been minimized by removing packages and content that are
+
+2026-04-30 18:25:02.059 not required on a system that users do not log into.
+
+2026-04-30 18:25:02.059
+
+2026-04-30 18:25:02.059 To restore this content, you can run the 'unminimize' command.
+
+2026-04-30 18:25:02.059
+
+2026-04-30 18:25:02.059 The programs included with the Ubuntu system are free software;
+
+2026-04-30 18:25:02.059 the exact distribution terms for each program are described in the
+
+2026-04-30 18:25:02.059 individual files in /usr/share/doc/*/copyright.
+
+2026-04-30 18:25:02.059
+
+2026-04-30 18:25:02.059 Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+
+2026-04-30 18:25:02.059 applicable law.
+
+2026-04-30 18:25:02.059
+
+2026-04-30 18:25:03.211 [TAIJI] error log above can be ignored
+
+2026-04-30 18:25:03.216 [TAIJI] run command 1777544703 [/bin/bash -c "${start_script}"]
+
+2026-04-30 18:25:06.940 Complete setting network policy rules.
+
+2026-04-30 18:25:13.049 update taiji environ ...
+
+2026-04-30 18:25:13.049 show args: --appName=95d1b2ad9dca2466019dddeb53002bf1 --projectName=external-ams-competition-2025n --module=pytorch --script=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/run.sh --script_archive=/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/utils.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/trainer.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/train.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/ns_groups.json,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/model.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/dataset.py,/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/.taiji_run.json --script_args=
+
+2026-04-30 18:25:13.094 INFO: ===begin to run starttorch cmd===
+
+2026-04-30 18:25:13.094 INFO: runtime_script_share_dir is /apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/95d1b2ad9dca2466019dddeb53002bf1/pipeline/95d1b2ad9dca2466019dddeb53002bf1/share
+
+2026-04-30 18:25:13.094 INFO: script_path :/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/scripts/95d1b2ad9dca2466019dddeb53002bf1/run.sh
+
+2026-04-30 18:25:13.095 INFO: framework is pytorch
+
+2026-04-30 18:25:13.095 INFO: Run command: bash /home/taiji/dl/runtime/script/run.sh
+
+2026-04-30 18:25:13.095 INFO: ====== Begin cmd ======
+
+2026-04-30 18:25:14.540 [DEBUG][libvgpu]hijack_call.c:106 [p:273 t:273]init cuda hook lib
+
+2026-04-30 18:25:14.540 [DEBUG][libvgpu]hijack_call.c:107 [p:273 t:273]Thread pid:273, tid:273
+
+2026-04-30 18:25:14.540 [DEBUG][libvgpu]hijack_call.c:125 [p:273 t:273]env_ld_library_path: /usr/local/cuda/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+2026-04-30 18:25:14.543 [DEBUG][libvgpu]hijack_call.c:172 [p:273 t:273]hooked env NCCL_SET_THREAD_NAME to : 1
+
+2026-04-30 18:25:14.544 [DEBUG][libvgpu]hijack_call.c:173 [p:273 t:273]hooked LD_LIBRARY_PATH to : /usr/local/cuda/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+2026-04-30 18:25:14.544 [DEBUG][libvgpu]hijack_call.c:174 [p:273 t:273]hooked libnvml_realpath to : /lib/x86_64-linux-gnu/libnvidia-ml.so.1
+
+2026-04-30 18:25:14.544 [DEBUG][libvgpu]hijack_call.c:175 [p:273 t:273]hooked libcuda_realpath to : /lib/x86_64-linux-gnu/libcuda.so.1
+
+2026-04-30 18:25:18.650 04/30/26 18:25:18 - 0:00:00 - Args: {'data_dir': '/data_ams/academic_training_data', 'schema_path': None, 'ckpt_dir': '/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/95d1b2ad9dca2466019dddeb53002bf1/ckpt', 'log_dir': '/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/95d1b2ad9dca2466019dddeb53002bf1/log', 'batch_size': 256, 'lr': 0.0001, 'num_epochs': 1, 'patience': 5, 'seed': 42, 'device': 'cuda', 'num_workers': 8, 'buffer_batches': 20, 'train_ratio': 1.0, 'valid_ratio': 0.1, 'eval_every_n_steps': 0, 'seq_max_lens': 'seq_a:256,seq_b:256,seq_c:512,seq_d:512', 'd_model': 64, 'emb_dim': 64, 'num_queries': 2, 'num_hyformer_blocks': 2, 'num_heads': 4, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'use_time_buckets': True, 'rank_mixer_mode': 'full', 'use_rope': False, 'rope_base': 10000.0, 'loss_type': 'bce', 'focal_alpha': 0.1, 'focal_gamma': 2.0, 'sparse_lr': 0.05, 'sparse_weight_decay': 0.0, 'reinit_sparse_after_epoch': 1, 'reinit_cardinality_threshold': 0, 'emb_skip_threshold': 1000000, 'seq_id_threshold': 10000, 'ns_groups_json': '', 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 5, 'item_ns_tokens': 2, 'tf_events_dir': '/apdcephfs_fsgm2/share_305170765/angel/ams_2026_1029735554728158628/angel_training_ams_2026_1029735554728158628_20260430182436_c8a9dd41/95d1b2ad9dca2466019dddeb53002bf1/events'}
+
+2026-04-30 18:25:19.096 2026-04-30 18:25:19.095935: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+
+2026-04-30 18:25:19.104 2026-04-30 18:25:19.104838: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+
+2026-04-30 18:25:19.116 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+
+2026-04-30 18:25:19.116 E0000 00:00:1777544719.116799 269 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+
+2026-04-30 18:25:19.120 E0000 00:00:1777544719.120387 269 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+
+2026-04-30 18:25:19.130 W0000 00:00:1777544719.130288 269 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+
+2026-04-30 18:25:19.130 W0000 00:00:1777544719.130318 269 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+
+2026-04-30 18:25:19.130 W0000 00:00:1777544719.130320 269 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+
+2026-04-30 18:25:19.130 W0000 00:00:1777544719.130321 269 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+
+2026-04-30 18:25:19.133 2026-04-30 18:25:19.133358: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+
+2026-04-30 18:25:19.133 To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+2026-04-30 18:25:23.433 04/30/26 18:25:23 - 0:00:05 - generated new fontManager
+
+2026-04-30 18:25:23.854 04/30/26 18:25:23 - 0:00:05 - === Data value profile begin ===
+
+2026-04-30 18:25:23.854 04/30/26 18:25:23 - 0:00:05 - profile data_dir=/data_ams/academic_training_data, exists=True
+
+2026-04-30 18:25:23.854 04/30/26 18:25:23 - 0:00:05 - profile schema_path=/data_ams/academic_training_data/schema.json, exists=True
+
+2026-04-30 18:25:23.854 04/30/26 18:25:23 - 0:00:05 - profile schema counts: user_int=46, item_int=14, user_dense=10, seq_domains=['seq_a', 'seq_b', 'seq_c', 'seq_d']
+
+2026-04-30 18:25:23.854 04/30/26 18:25:23 - 0:00:05 - profile user_int vocab summary: count=46, min=3, max=2848, unique=26
+
+2026-04-30 18:25:23.854 04/30/26 18:25:23 - 0:00:05 - profile item_int vocab summary: count=14, min=3, max=23700, unique=13
+
+2026-04-30 18:25:23.855 04/30/26 18:25:23 - 0:00:05 - profile user_dense dims: [(61, 256), (62, 6), (63, 19), (64, 26), (65, 111), (66, 150), (87, 320), (89, 10), (90, 10), (91, 10)]
+
+2026-04-30 18:25:23.855 04/30/26 18:25:23 - 0:00:05 - profile seq[seq_a]: prefix=domain_a_seq, ts_fid=39, features=9, vocab_summary=count=9, min=0, max=745286, unique=9
+
+2026-04-30 18:25:23.855 04/30/26 18:25:23 - 0:00:05 - profile seq[seq_b]: prefix=domain_b_seq, ts_fid=67, features=14, vocab_summary=count=14, min=0, max=64710562, unique=14
+
+2026-04-30 18:25:23.855 04/30/26 18:25:23 - 0:00:05 - profile seq[seq_c]: prefix=domain_c_seq, ts_fid=27, features=12, vocab_summary=count=12, min=0, max=86335515, unique=12
+
+2026-04-30 18:25:23.855 04/30/26 18:25:23 - 0:00:05 - profile seq[seq_d]: prefix=domain_d_seq, ts_fid=26, features=10, vocab_summary=count=10, min=0, max=606041, unique=10
+
+2026-04-30 18:25:23.857 04/30/26 18:25:23 - 0:00:05 - profile data_dir first entries (30 shown): ['_SUCCESS', 'part-00000-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00001-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00002-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00003-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00004-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00005-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00006-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00007-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00008-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00009-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00010-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00011-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00012-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00013-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00014-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00015-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00016-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00017-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00018-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00019-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00020-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00021-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00022-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00023-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00024-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00025-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00026-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00027-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet', 'part-00028-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet']
+
+2026-04-30 18:25:24.341 04/30/26 18:25:24 - 0:00:06 - profile parquet files=1000, total_rows=1010000, total_row_groups=1000
+
+2026-04-30 18:25:24.342 04/30/26 18:25:24 - 0:00:06 - profile file rows summary: min=975, p50=1015, p90=1028, max=1034
+
+2026-04-30 18:25:24.342 04/30/26 18:25:24 - 0:00:06 - profile row_group rows summary: count=1000, min=975, p50=1015, p90=1028, p99=1033, max=1034
+
+2026-04-30 18:25:24.342 04/30/26 18:25:24 - 0:00:06 - profile first parquet: name=part-00000-e514e21a-e5a7-465a-9346-3cd81c8da444-c000.gz.parquet, rows=1030, row_groups=1, columns=120
+
+2026-04-30 18:25:24.343 04/30/26 18:25:24 - 0:00:06 - profile first parquet columns: ['user_id', 'item_id', 'label_type', 'label_time', 'timestamp', 'user_int_feats_1', 'user_int_feats_3', 'user_int_feats_4', 'user_int_feats_15', 'user_int_feats_48', 'user_int_feats_49', 'user_int_feats_50', 'user_int_feats_51', 'user_int_feats_52', 'user_int_feats_53', 'user_int_feats_54', 'user_int_feats_55', 'user_int_feats_56', 'user_int_feats_57', 'user_int_feats_58', 'user_int_feats_59', 'user_int_feats_60', 'user_int_feats_62', 'user_int_feats_63', 'user_int_feats_64', 'user_int_feats_65', 'user_int_feats_66', 'user_int_feats_80', 'user_int_feats_82', 'user_int_feats_86', 'user_int_feats_89', 'user_int_feats_90', 'user_int_feats_91', 'user_int_feats_92', 'user_int_feats_93', 'user_int_feats_94', 'user_int_feats_95', 'user_int_feats_96', 'user_int_feats_97', 'user_int_feats_98', 'user_int_feats_99', 'user_int_feats_100', 'user_int_feats_101', 'user_int_feats_102', 'user_int_feats_103', 'user_int_feats_104', 'user_int_feats_105', 'user_int_feats_106', 'user_int_feats_107', 'user_int_feats_108', 'user_int_feats_109', 'user_dense_feats_61', 'user_dense_feats_62', 'user_dense_feats_63', 'user_dense_feats_64', 'user_dense_feats_65', 'user_dense_feats_66', 'user_dense_feats_87', 'user_dense_feats_89', 'user_dense_feats_90', 'user_dense_feats_91', 'item_int_feats_5', 'item_int_feats_6', 'item_int_feats_7', 'item_int_feats_8', 'item_int_feats_9', 'item_int_feats_10', 'item_int_feats_11', 'item_int_feats_12', 'item_int_feats_13', 'item_int_feats_16', 'item_int_feats_81', 'item_int_feats_83', 'item_int_feats_84', 'item_int_feats_85', 'domain_a_seq_38', 'domain_a_seq_39', 'domain_a_seq_40', 'domain_a_seq_41', 'domain_a_seq_42', 'domain_a_seq_43', 'domain_a_seq_44', 'domain_a_seq_45', 'domain_a_seq_46', 'domain_b_seq_67', 'domain_b_seq_68', 'domain_b_seq_69', 'domain_b_seq_70', 'domain_b_seq_71', 'domain_b_seq_72', 'domain_b_seq_73', 'domain_b_seq_74', 'domain_b_seq_75', 'domain_b_seq_76', 'domain_b_seq_77', 'domain_b_seq_78', 'domain_b_seq_79', 'domain_b_seq_88', 'domain_c_seq_27', 'domain_c_seq_28', 'domain_c_seq_29', 'domain_c_seq_30', 'domain_c_seq_31', 'domain_c_seq_32', 'domain_c_seq_33', 'domain_c_seq_34', 'domain_c_seq_35', 'domain_c_seq_36', 'domain_c_seq_37', 'domain_c_seq_47', 'domain_d_seq_17', 'domain_d_seq_18', 'domain_d_seq_19', 'domain_d_seq_20', 'domain_d_seq_21', 'domain_d_seq_22', 'domain_d_seq_23', 'domain_d_seq_24', 'domain_d_seq_25', 'domain_d_seq_26']
+
+2026-04-30 18:25:24.343 04/30/26 18:25:24 - 0:00:06 - profile first parquet dense types: [('user_dense_feats_61', 'list<element: float not null>'), ('user_dense_feats_62', 'list<element: float not null>'), ('user_dense_feats_63', 'list<element: float not null>'), ('user_dense_feats_64', 'list<element: float not null>'), ('user_dense_feats_65', 'list<element: float not null>'), ('user_dense_feats_66', 'list<element: float not null>'), ('user_dense_feats_87', 'list<element: float not null>'), ('user_dense_feats_89', 'list<element: float not null>'), ('user_dense_feats_90', 'list<element: float not null>'), ('user_dense_feats_91', 'list<element: float not null>')]
+
+2026-04-30 18:25:25.539 04/30/26 18:25:25 - 0:00:07 - profile sampled files=5, sampled label_type counts={1: 4685, 2: 461}
+
+2026-04-30 18:25:25.552 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_61: sampled_values=200000/1315584, min=-0.221237, p1=-0.129295, p25=-0.0445345, p50=-0.00235924, p75=0.0417206, p90=0.0859336, p99=0.133265, max=0.212043, mean=-0.00109067, std=0.0623618, absmax=0.221237, nan=0, inf=0, zero_ratio=0.000000, integer_like_ratio=0.000005, null_lists=7, null_values=0, len_min=256, len_p50=256, len_p90=256, len_p99=256, len_max=256
+
+2026-04-30 18:25:25.553 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_62: sampled_values=11181/11181, min=4, p1=635, p25=10869.7, p50=32854.6, p75=107722, p90=381882, p99=2.02916e+06, max=1.37086e+07, mean=157362, std=433645, absmax=1.37086e+07, nan=0, inf=0, zero_ratio=0.000000, integer_like_ratio=0.456041, null_lists=301, null_values=0, len_min=1, len_p50=2, len_p90=4, len_p99=4, len_max=5
+
+2026-04-30 18:25:25.554 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_63: sampled_values=13067/13067, min=4, p1=481, p25=8407.75, p50=30055.2, p75=101856, p90=371627, p99=2.036e+06, max=1.86773e+07, mean=155560, std=462650, absmax=1.86773e+07, nan=0, inf=0, zero_ratio=0.000000, integer_like_ratio=0.539221, null_lists=301, null_values=0, len_min=1, len_p50=2, len_p90=5, len_p99=8, len_max=12
+
+2026-04-30 18:25:25.556 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_64: sampled_values=20967/20967, min=4, p1=506.66, p25=8296.58, p50=24353.2, p75=74992.4, p90=292248, p99=2.01562e+06, max=2.0857e+07, mean=137249, std=463704, absmax=2.0857e+07, nan=0, inf=0, zero_ratio=0.000000, integer_like_ratio=0.616779, null_lists=301, null_values=0, len_min=1, len_p50=4, len_p90=8, len_p99=12, len_max=19
+
+2026-04-30 18:25:25.558 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_65: sampled_values=31053/31053, min=4, p1=474, p25=7869, p50=25718, p75=91069.2, p90=370953, p99=2.32468e+06, max=3.07104e+07, mean=162186, std=525994, absmax=3.07104e+07, nan=0, inf=0, zero_ratio=0.000000, integer_like_ratio=0.695617, null_lists=360, null_values=0, len_min=1, len_p50=5, len_p90=13, len_p99=26, len_max=57
+
+2026-04-30 18:25:25.561 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_66: sampled_values=43737/43737, min=4, p1=517.68, p25=9211, p50=30585.9, p75=132543, p90=646643, p99=4.18059e+06, max=3.27289e+07, mean=279474, std=938707, absmax=3.27289e+07, nan=0, inf=0, zero_ratio=0.000000, integer_like_ratio=0.754990, null_lists=378, null_values=0, len_min=1, len_p50=6, len_p90=20, len_p99=39, len_max=75
+
+2026-04-30 18:25:25.570 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_87: sampled_values=200000/1638400, min=-0.7024, p1=-0.368901, p25=0, p50=0, p75=0, p90=0.0991, p99=0.333101, max=0.6582, mean=-0.0040289, std=0.109104, absmax=0.7024, nan=0, inf=0, zero_ratio=0.618645, integer_like_ratio=0.618645, null_lists=26, null_values=0, len_min=320, len_p50=320, len_p90=320, len_p99=320, len_max=320
+
+2026-04-30 18:25:25.573 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_89: sampled_values=49260/49260, min=-0.8671, p1=-0.5487, p25=-0.1994, p50=-0.004, p75=0.114925, p90=0.5134, p99=0.741041, max=0.9047, mean=-4.23771e-05, std=0.316228, absmax=0.9047, nan=0, inf=0, zero_ratio=0.003390, integer_like_ratio=0.003390, null_lists=220, null_values=0, len_min=10, len_p50=10, len_p90=10, len_p99=10, len_max=10
+
+2026-04-30 18:25:25.576 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_90: sampled_values=47230/47230, min=-0.8491, p1=-0.542871, p25=-0.1987, p50=-0.004, p75=0.114475, p90=0.51441, p99=0.738913, max=0.887, mean=-4.63773e-05, std=0.316228, absmax=0.887, nan=0, inf=0, zero_ratio=0.003430, integer_like_ratio=0.003430, null_lists=423, null_values=0, len_min=10, len_p50=10, len_p90=10, len_p99=10, len_max=10
+
+2026-04-30 18:25:25.578 04/30/26 18:25:25 - 0:00:07 - profile dense user_dense_feats_91: sampled_values=27470/27470, min=-0.8671, p1=-0.613624, p25=-0.2091, p50=-0.003, p75=0.1209, p90=0.49332, p99=0.7844, max=0.9106, mean=-4.36834e-06, std=0.316228, absmax=0.9106, nan=0, inf=0, zero_ratio=0.001602, integer_like_ratio=0.001602, null_lists=2399, null_values=0, len_min=10, len_p50=10, len_p90=10, len_p99=10, len_max=10
+
+2026-04-30 18:25:25.578 04/30/26 18:25:25 - 0:00:07 - === Data value profile end ===
+
+2026-04-30 18:25:25.584 04/30/26 18:25:25 - 0:00:07 - Seq max_lens override: {'seq_a': 256, 'seq_b': 256, 'seq_c': 512, 'seq_d': 512}
+
+2026-04-30 18:25:25.584 04/30/26 18:25:25 - 0:00:07 - Using Parquet data format (IterableDataset)
+
+2026-04-30 18:25:26.114 04/30/26 18:25:26 - 0:00:07 - Row Group split: 900 train (907381 rows), 100 valid (102619 rows)
+
+2026-04-30 18:25:26.623 04/30/26 18:25:26 - 0:00:08 - PCVRParquetDataset: 907381 rows from 1000 file(s), batch_size=256, buffer_batches=20, shuffle=True
+
+2026-04-30 18:25:27.139 04/30/26 18:25:27 - 0:00:08 - PCVRParquetDataset: 102619 rows from 1000 file(s), batch_size=256, buffer_batches=0, shuffle=False
+
+2026-04-30 18:25:27.140 04/30/26 18:25:27 - 0:00:08 - Parquet train: 907381 rows, valid: 102619 rows, batch_size=256, buffer_batches=20
+
+2026-04-30 18:25:27.140 04/30/26 18:25:27 - 0:00:08 - No NS groups JSON found, using default: each feature as one group
+
+2026-04-30 18:25:27.163 04/30/26 18:25:27 - 0:00:09 - RankMixerNSTokenizer: 46 fids, total_emb_dim=2944, chunk_dim=589, num_ns_tokens=5, pad=1
+
+2026-04-30 18:25:27.182 04/30/26 18:25:27 - 0:00:09 - RankMixerNSTokenizer: 14 fids, total_emb_dim=896, chunk_dim=448, num_ns_tokens=2, pad=0
+
+2026-04-30 18:25:29.271 04/30/26 18:25:29 - 0:00:11 - emb_skip_threshold=1000000: seq_b skipped 1/13 features
+
+2026-04-30 18:25:29.271 04/30/26 18:25:29 - 0:00:11 - emb_skip_threshold=1000000: seq_c skipped 3/11 features
+
+2026-04-30 18:25:33.592 04/30/26 18:25:33 - 0:00:15 - PCVRHyFormer model created: num_ns=8, T=16, d_model=64, rank_mixer_mode=full
+
+2026-04-30 18:25:33.593 04/30/26 18:25:33 - 0:00:15 - User NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19], [20], [21], [22], [23], [24], [25], [26], [27], [28], [29], [30], [31], [32], [33], [34], [35], [36], [37], [38], [39], [40], [41], [42], [43], [44], [45]]
+
+2026-04-30 18:25:33.593 04/30/26 18:25:33 - 0:00:15 - Item NS groups: [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13]]
+
+2026-04-30 18:25:33.594 04/30/26 18:25:33 - 0:00:15 - Total parameters: 239,931,649
+
+2026-04-30 18:25:33.597 04/30/26 18:25:33 - 0:00:15 - Sparse params: 98 tensors, 237,435,776 parameters (Adagrad lr=0.05)
+
+2026-04-30 18:25:33.597 04/30/26 18:25:33 - 0:00:15 - Dense params: 380 tensors, 2,495,873 parameters (AdamW lr=0.0001)
+
+2026-04-30 18:25:36.376 04/30/26 18:25:36 - 0:00:18 - PCVRHyFormerRankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=1
+
+2026-04-30 18:25:36.376 Start training (PCVRHyFormer)
