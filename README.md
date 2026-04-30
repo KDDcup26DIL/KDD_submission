@@ -53,10 +53,6 @@
 | EulerNet(b64) | 1 epoch | 0.758946 | 0.370776 |
 | SCV | 1 epoch |  |  |
 
-## iPinYou (15,395,258 row, 519 MB)
-| model | settings | AUC | LogLoss |
-| --- | --- | --- | --- |
-
 <!-- ## Sample (1,000 row, 40.1MB) -->
 
 
@@ -94,9 +90,6 @@ unzip criteo.zip
 
 gdown --fuzzy "https://drive.google.com/file/d/1GQHmnzjoajfZHoY_bLdP51wg3QrBLWxG/view?usp=sharing"
 unzip Avazu.zip
-
-gdown --fuzzy "https://drive.google.com/file/d/1f9V-35bMMHTBtDQfA-6N16dJEZtwdqe2/view?usp=sharing"
-unzip iPinYou.zip
 ```
 - gdown으로 Google Drive 파일 다운로드
 - dataset은 `data/{dataset_name}/` 아래에 다음 파일명으로 배치
