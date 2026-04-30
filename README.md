@@ -10,7 +10,9 @@
 | LSTM | toss tiny 10 epoch | 0.576957 | 0.105185 |
 | DCNv2 | toss tiny 10 epoch | 0.647718 | 0.098608 | 
 | WuKong | toss tiny 10 epoch | 0.675493 | 0.097939 |
-| HyFormer | toss tiny 10 epoch | 0.596690 | 0.100134 |
+| HyFormer | block 2, toss tiny 10 epoch | 0.596690 | 0.100134 |
+| HyFormer | block 4, toss tiny 10 epoch | 0.600007 | 0.100018 |
+| HyFormerResidual | block 4, toss tiny 10 epoch | 0.598816 | 0.100003 |
 | EulerNet(b64) | toss tiny 10 epoch | 0.664916 | 0.100351 |
 | SCV(b64) | toss tiny 10 epoch | 0.636060 | 0.107081 |
 | hySCV | toss tiny 10 epoch | 0.651397 | 0.100834 |
