@@ -13,6 +13,7 @@
 | HyFormer | toss tiny 10 epoch | 0.596690 | 0.100134 |
 | EulerNet(b64) | toss tiny 10 epoch | 0.664916 | 0.100351 |
 | SCV(b64) | toss tiny 10 epoch | 0.636060 | 0.107081 |
+| hySCV | toss tiny 10 epoch | 0.651397 | 0.100834 |
 | FinalMLP | toss tiny 10 epoch | 0.597006 | 0.101975 |
 
 ## Frappe (84,373 row, 6.8 MB)
