@@ -1404,8 +1404,6 @@ class PCVRHyFormer(nn.Module):
             )
             for _ in range(num_hyformer_blocks)
         ])
-        self.block_q_gates = nn.Parameter(torch.zeros(num_hyformer_blocks))
-
         # ================== RoPE ==================
         if use_rope:
             head_dim = d_model // num_heads
@@ -1601,7 +1599,7 @@ class PCVRHyFormer(nn.Module):
         curr_seqs = seq_tokens_list
         curr_masks = seq_masks_list
 
-        for block_idx, block in enumerate(self.blocks):
+        for block in self.blocks:
             # Precompute RoPE cos/sin for each sequence
             rope_cos_list = None
             rope_sin_list = None
@@ -1624,9 +1622,8 @@ class PCVRHyFormer(nn.Module):
                 rope_cos_list=rope_cos_list,
                 rope_sin_list=rope_sin_list,
             )
-            q_gate = torch.sigmoid(self.block_q_gates[block_idx])
             curr_qs = [
-                q_prev + q_gate * (q_new - q_prev)
+                0.5 * (q_prev + q_new)
                 for q_prev, q_new in zip(prev_qs, new_qs)
             ]
 

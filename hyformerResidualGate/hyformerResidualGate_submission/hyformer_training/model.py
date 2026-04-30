@@ -1404,6 +1404,7 @@ class PCVRHyFormer(nn.Module):
             )
             for _ in range(num_hyformer_blocks)
         ])
+
         # ================== RoPE ==================
         if use_rope:
             head_dim = d_model // num_heads
@@ -1613,8 +1614,7 @@ class PCVRHyFormer(nn.Module):
                     rope_cos_list.append(cos)
                     rope_sin_list.append(sin)
 
-            prev_qs = curr_qs
-            new_qs, curr_ns, curr_seqs, curr_masks = block(
+            curr_qs, curr_ns, curr_seqs, curr_masks = block(
                 q_tokens_list=curr_qs,
                 ns_tokens=curr_ns,
                 seq_tokens_list=curr_seqs,
@@ -1622,10 +1622,6 @@ class PCVRHyFormer(nn.Module):
                 rope_cos_list=rope_cos_list,
                 rope_sin_list=rope_sin_list,
             )
-            curr_qs = [
-                0.5 * (q_prev + q_new)
-                for q_prev, q_new in zip(prev_qs, new_qs)
-            ]
 
         # Output: concatenate all sequences' Q tokens then project via MLP
         B = curr_qs[0].shape[0]

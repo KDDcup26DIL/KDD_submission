@@ -12,7 +12,8 @@
 | WuKong | toss tiny 10 epoch | 0.675493 | 0.097939 |
 | HyFormer | block 2, toss tiny 10 epoch | 0.596690 | 0.100134 |
 | HyFormer | block 4, toss tiny 10 epoch | 0.600007 | 0.100018 |
-| HyFormerResidual | block 4, toss tiny 10 epoch | 0.598816 | 0.100003 |
+| HyFormerResidual | block 4, toss tiny 10 epoch | 0.595316 | 0.100052 |
+| HyFormerResidualGate | block 4, toss tiny 10 epoch | 0.598816 | 0.100003 |
 | EulerNet(b64) | toss tiny 10 epoch | 0.664916 | 0.100351 |
 | SCV(b64) | toss tiny 10 epoch | 0.636060 | 0.107081 |
 | hySCV | toss tiny 10 epoch | 0.651397 | 0.100834 |
@@ -27,6 +28,9 @@
 | DCNv2 | frappe 10 epoch | 0.583559 | 4.146001 |
 | WuKong | frappe 10 epoch | 0.604436 | 1.864935 |
 | HyFormer | frappe 10 epoch | 0.571346 | 0.619358 |
+| HyFormer | block 4, frappe 10 epoch | 0.587791 | 0.640485 |
+| HyFormerResidual | block 4, frappe 10 epoch | 0.582860 | 0.640809 |
+| HyFormerResidualGate | block 4, frappe 10 epoch | 0.582632 | 0.640809 | 
 | EulerNet(b64) | frappe 10 epoch | 0.596707 | 3.624638 |
 | SCV(b64) | frappe 10 epoch | 0.567228 | 6.251460 |
 | FinalMLP | frappe 10 epoch | 0.558044 | 5.592541 |
