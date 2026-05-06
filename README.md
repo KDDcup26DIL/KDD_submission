@@ -31,6 +31,7 @@
 | HyFormer | block 4, frappe 10 epoch | 0.587791 | 0.640485 |
 | HyFormerResidual | block 4, frappe 10 epoch | 0.582860 | 0.640809 |
 | HyFormerResidualGate | block 4, frappe 10 epoch | 0.582632 | 0.640809 | 
+| HyFormerNSgate | frappe 10 epoch | 0.600273 | 0.794707 | 
 | EulerNet(b64) | frappe 10 epoch | 0.596707 | 3.624638 |
 | SCV(b64) | frappe 10 epoch | 0.567228 | 6.251460 |
 | FinalMLP | frappe 10 epoch | 0.558044 | 5.592541 |
