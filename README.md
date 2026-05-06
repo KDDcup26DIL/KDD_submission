@@ -14,6 +14,7 @@
 | HyFormer | block 4, toss tiny 10 epoch | 0.600007 | 0.100018 |
 | HyFormerResidual | block 4, toss tiny 10 epoch | 0.595316 | 0.100052 |
 | HyFormerResidualGate | block 4, toss tiny 10 epoch | 0.598816 | 0.100003 |
+| HyFormerNSgate | toss 10 epoch | 0.615006 | 0.099876 | 
 | EulerNet(b64) | toss tiny 10 epoch | 0.664916 | 0.100351 |
 | SCV(b64) | toss tiny 10 epoch | 0.636060 | 0.107081 |
 | hySCV | toss tiny 10 epoch | 0.651397 | 0.100834 |
