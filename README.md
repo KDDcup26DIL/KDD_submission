@@ -46,6 +46,7 @@
 | DCNv2 | criteo tiny 10 epoch | 0.716244 | 0.137127 |
 | WuKong | criteo tiny 10 epoch | 0.718297 | 0.136963 | 
 | HyFormer | criteo tiny 10 epoch | 0.681548 | 0.137037 |
+| HyFormerNSgate | criteo tiny 10 epoch | 0.696681 | 0.139001 |
 | EulerNet(b64) | criteo tiny 10 epoch | 0.685526 | 0.139992 |
 | SCV(b64) | criteo tiny 10 epoch | 0.686393 | 0.141272 |
 | FinalMLP | criteo tiny 10 epoch | 0.705162 | 0.138561 |
