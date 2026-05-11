@@ -22,12 +22,6 @@ import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-# Avoid oversubscribing CPU threads in each DataLoader worker on many-core
-# evaluation hosts. These must be set before importing pyarrow via dataset.py.
-os.environ.setdefault('NUMEXPR_MAX_THREADS', '1')
-os.environ.setdefault('OMP_NUM_THREADS', '1')
-os.environ.setdefault('MKL_NUM_THREADS', '1')
-
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -79,9 +73,8 @@ _FALLBACK_MODEL_CFG = {
 _FALLBACK_SEQ_MAX_LENS = 'seq_a:256,seq_b:256,seq_c:512,seq_d:512'
 _FALLBACK_BATCH_SIZE = 256
 _FALLBACK_NUM_WORKERS = 16
-_DEFAULT_INFER_BATCH_SIZE = 256
-_DEFAULT_INFER_MICRO_BATCH_SIZE = 128
-_DEFAULT_INFER_NUM_WORKERS = 8
+_DEFAULT_INFER_BATCH_SIZE = 64
+_DEFAULT_INFER_NUM_WORKERS = 4
 
 
 # Hyperparameter keys used to build the model. Everything else in
@@ -386,12 +379,12 @@ def _infer_batch_adaptive(
                 dtype=torch.float16,
                 enabled=(use_amp and device.startswith('cuda')),
             ):
-                logits = model(model_input)
+                logits, embedding = model.predict(model_input)
                 logits = logits.squeeze(-1)
                 probs = torch.sigmoid(logits).detach().cpu().float().numpy()
             probs_out.extend(probs.tolist())
             start = end
-            del model_input, logits, probs, micro_batch
+            del model_input, logits, embedding, probs, micro_batch
         except RuntimeError as exc:
             if not _is_cuda_oom(exc) or cur_micro_batch_size == 1:
                 raise
@@ -414,11 +407,6 @@ def main() -> None:
     os.makedirs(result_dir, exist_ok=True)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    if torch.cuda.is_available():
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cudnn.allow_tf32 = True
-    if hasattr(torch, 'set_float32_matmul_precision'):
-        torch.set_float32_matmul_precision('high')
 
     # ---- Schema: prefer the one from model_dir (to exactly match training);
     #      fall back to the one in data_dir if missing. ----
@@ -435,20 +423,17 @@ def main() -> None:
     seq_max_lens = _parse_seq_max_lens(sml_str)
     logging.info(f"seq_max_lens: {seq_max_lens}")
 
-    # ---- Data loading: keep CPU/Parquet batches large, cap GPU micro-batches ----
+    # ---- Data loading: use conservative inference defaults to avoid OOM ----
     train_batch_size = int(train_config.get('batch_size', _FALLBACK_BATCH_SIZE))
     train_num_workers = int(train_config.get('num_workers', _FALLBACK_NUM_WORKERS))
     batch_size = _env_int(
         'PCVR_INFER_BATCH_SIZE',
-        max(train_batch_size, _DEFAULT_INFER_BATCH_SIZE),
+        min(train_batch_size, _DEFAULT_INFER_BATCH_SIZE),
     )
-    micro_batch_size = _env_int(
-        'PCVR_INFER_MICRO_BATCH_SIZE',
-        min(batch_size, _DEFAULT_INFER_MICRO_BATCH_SIZE),
-    )
+    micro_batch_size = _env_int('PCVR_INFER_MICRO_BATCH_SIZE', batch_size)
     num_workers = _env_int(
         'PCVR_INFER_NUM_WORKERS',
-        max(train_num_workers, _DEFAULT_INFER_NUM_WORKERS),
+        min(train_num_workers, _DEFAULT_INFER_NUM_WORKERS),
     )
     use_amp = _env_bool('PCVR_INFER_AMP', torch.cuda.is_available())
     logging.info(
@@ -509,8 +494,7 @@ def main() -> None:
         test_dataset,
         batch_size=None,
         num_workers=num_workers,
-        prefetch_factor=4 if num_workers > 0 else None,
-        persistent_workers=num_workers > 0,
+        prefetch_factor=2 if num_workers > 0 else None,
         pin_memory=torch.cuda.is_available(),
     )
 

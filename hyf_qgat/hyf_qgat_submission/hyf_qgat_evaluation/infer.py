@@ -22,12 +22,6 @@ import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-# Avoid oversubscribing CPU threads in each DataLoader worker on many-core
-# evaluation hosts. These must be set before importing pyarrow via dataset.py.
-os.environ.setdefault('NUMEXPR_MAX_THREADS', '1')
-os.environ.setdefault('OMP_NUM_THREADS', '1')
-os.environ.setdefault('MKL_NUM_THREADS', '1')
-
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -74,14 +68,12 @@ _FALLBACK_MODEL_CFG = {
     'ns_tokenizer_type': 'rankmixer',
     'user_ns_tokens': 0,
     'item_ns_tokens': 0,
+    'ns_summary_mode': 'mean',
 }
 
 _FALLBACK_SEQ_MAX_LENS = 'seq_a:256,seq_b:256,seq_c:512,seq_d:512'
 _FALLBACK_BATCH_SIZE = 256
 _FALLBACK_NUM_WORKERS = 16
-_DEFAULT_INFER_BATCH_SIZE = 256
-_DEFAULT_INFER_MICRO_BATCH_SIZE = 128
-_DEFAULT_INFER_NUM_WORKERS = 8
 
 
 # Hyperparameter keys used to build the model. Everything else in
@@ -110,25 +102,6 @@ def _parse_seq_max_lens(sml_str: str) -> Dict[str, int]:
         k, v = pair.split(':')
         seq_max_lens[k.strip()] = int(v.strip())
     return seq_max_lens
-
-
-def _env_int(name: str, default: int) -> int:
-    value = os.environ.get(name)
-    if value is None or value == '':
-        return default
-    try:
-        parsed = int(value)
-    except ValueError:
-        logging.warning(f"Ignoring invalid {name}={value!r}; using {default}")
-        return default
-    return max(1, parsed)
-
-
-def _env_bool(name: str, default: bool) -> bool:
-    value = os.environ.get(name)
-    if value is None or value == '':
-        return default
-    return value.lower() in {'1', 'true', 'yes', 'y', 'on'}
 
 
 def load_train_config(model_dir: str) -> Dict[str, Any]:
@@ -331,80 +304,6 @@ def _batch_to_model_input(
     )
 
 
-def _slice_batch(batch: Dict[str, Any], start: int, end: int) -> Dict[str, Any]:
-    """Slice a CPU batch before moving tensors to CUDA.
-
-    ``PCVRParquetDataset`` already yields full tensor batches. Slicing first
-    keeps peak GPU memory bounded by the inference micro-batch size rather
-    than by the dataset batch size.
-    """
-    sliced: Dict[str, Any] = {}
-    for k, v in batch.items():
-        if isinstance(v, torch.Tensor):
-            sliced[k] = v[start:end]
-        elif k == 'user_id':
-            sliced[k] = v[start:end]
-        else:
-            sliced[k] = v
-    return sliced
-
-
-def _batch_size_of(batch: Dict[str, Any]) -> int:
-    labels = batch.get('label')
-    if isinstance(labels, torch.Tensor):
-        return int(labels.shape[0])
-    user_ids = batch.get('user_id', [])
-    return len(user_ids)
-
-
-def _is_cuda_oom(exc: BaseException) -> bool:
-    msg = str(exc).lower()
-    oom_error = getattr(torch.cuda, 'OutOfMemoryError', RuntimeError)
-    return isinstance(exc, oom_error) or ('cuda' in msg and 'out of memory' in msg)
-
-
-def _infer_batch_adaptive(
-    model: nn.Module,
-    batch: Dict[str, Any],
-    device: str,
-    micro_batch_size: int,
-    use_amp: bool,
-) -> Tuple[List[float], int]:
-    """Infer one dataset batch, halving micro-batch size on CUDA OOM."""
-    batch_size = _batch_size_of(batch)
-    probs_out: List[float] = []
-    start = 0
-    cur_micro_batch_size = max(1, min(micro_batch_size, batch_size))
-
-    while start < batch_size:
-        end = min(start + cur_micro_batch_size, batch_size)
-        micro_batch = _slice_batch(batch, start, end)
-        try:
-            model_input = _batch_to_model_input(micro_batch, device)
-            with torch.autocast(
-                device_type='cuda',
-                dtype=torch.float16,
-                enabled=(use_amp and device.startswith('cuda')),
-            ):
-                logits = model(model_input)
-                logits = logits.squeeze(-1)
-                probs = torch.sigmoid(logits).detach().cpu().float().numpy()
-            probs_out.extend(probs.tolist())
-            start = end
-            del model_input, logits, probs, micro_batch
-        except RuntimeError as exc:
-            if not _is_cuda_oom(exc) or cur_micro_batch_size == 1:
-                raise
-            logging.warning(
-                f"CUDA OOM at inference micro_batch_size={cur_micro_batch_size}; "
-                f"retrying with {max(1, cur_micro_batch_size // 2)}")
-            cur_micro_batch_size = max(1, cur_micro_batch_size // 2)
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-
-    return probs_out, cur_micro_batch_size
-
-
 def main() -> None:
     # ---- Read environment variables ----
     model_dir = os.environ.get('MODEL_OUTPUT_PATH')
@@ -414,11 +313,6 @@ def main() -> None:
     os.makedirs(result_dir, exist_ok=True)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    if torch.cuda.is_available():
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cudnn.allow_tf32 = True
-    if hasattr(torch, 'set_float32_matmul_precision'):
-        torch.set_float32_matmul_precision('high')
 
     # ---- Schema: prefer the one from model_dir (to exactly match training);
     #      fall back to the one in data_dir if missing. ----
@@ -435,26 +329,9 @@ def main() -> None:
     seq_max_lens = _parse_seq_max_lens(sml_str)
     logging.info(f"seq_max_lens: {seq_max_lens}")
 
-    # ---- Data loading: keep CPU/Parquet batches large, cap GPU micro-batches ----
-    train_batch_size = int(train_config.get('batch_size', _FALLBACK_BATCH_SIZE))
-    train_num_workers = int(train_config.get('num_workers', _FALLBACK_NUM_WORKERS))
-    batch_size = _env_int(
-        'PCVR_INFER_BATCH_SIZE',
-        max(train_batch_size, _DEFAULT_INFER_BATCH_SIZE),
-    )
-    micro_batch_size = _env_int(
-        'PCVR_INFER_MICRO_BATCH_SIZE',
-        min(batch_size, _DEFAULT_INFER_MICRO_BATCH_SIZE),
-    )
-    num_workers = _env_int(
-        'PCVR_INFER_NUM_WORKERS',
-        max(train_num_workers, _DEFAULT_INFER_NUM_WORKERS),
-    )
-    use_amp = _env_bool('PCVR_INFER_AMP', torch.cuda.is_available())
-    logging.info(
-        f"Inference memory settings: batch_size={batch_size}, "
-        f"micro_batch_size={micro_batch_size}, num_workers={num_workers}, "
-        f"amp={use_amp}")
+    # ---- Data loading: reuse batch_size / num_workers from training config ----
+    batch_size = int(train_config.get('batch_size', _FALLBACK_BATCH_SIZE))
+    num_workers = int(train_config.get('num_workers', _FALLBACK_NUM_WORKERS))
 
     test_dataset = PCVRParquetDataset(
         parquet_path=data_dir,
@@ -509,8 +386,7 @@ def main() -> None:
         test_dataset,
         batch_size=None,
         num_workers=num_workers,
-        prefetch_factor=4 if num_workers > 0 else None,
-        persistent_workers=num_workers > 0,
+        prefetch_factor=2,
         pin_memory=torch.cuda.is_available(),
     )
 
@@ -518,21 +394,19 @@ def main() -> None:
     all_user_ids = []
     logging.info("Starting inference...")
 
-    with torch.inference_mode():
+    with torch.no_grad():
         for batch_idx, batch in enumerate(test_loader):
+            model_input = _batch_to_model_input(batch, device)
             user_ids = batch.get('user_id', [])
-            probs, micro_batch_size = _infer_batch_adaptive(
-                model=model,
-                batch=batch,
-                device=device,
-                micro_batch_size=micro_batch_size,
-                use_amp=use_amp,
-            )
-            all_probs.extend(probs)
+
+            logits, _ = model.predict(model_input)
+            logits = logits.squeeze(-1)
+            probs = torch.sigmoid(logits).cpu().numpy()
+            all_probs.extend(probs.tolist())
             all_user_ids.extend(user_ids)
 
             if (batch_idx + 1) % 100 == 0:
-                logging.info(f"  Processed {len(all_probs)} samples")
+                logging.info(f"  Processed {(batch_idx + 1) * batch_size} samples")
 
     logging.info(f"Inference complete: {len(all_probs)} predictions")
 
