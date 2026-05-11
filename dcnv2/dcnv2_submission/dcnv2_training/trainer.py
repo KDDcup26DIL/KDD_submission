@@ -55,7 +55,6 @@ class PCVRDCNv2RankingTrainer:
         ckpt_params: Optional[Dict[str, Any]] = None,
         writer: Optional[Any] = None,
         schema_path: Optional[str] = None,
-        ns_groups_path: Optional[str] = None,
         eval_every_n_steps: int = 0,
         train_config: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -66,11 +65,6 @@ class PCVRDCNv2RankingTrainer:
         # schema_path is copied alongside every checkpoint so that infer.py can
         # rebuild the exact same feature schema the model was trained with.
         self.schema_path: Optional[str] = schema_path
-        # ns_groups_path is optional; copied next to schema.json when provided
-        # and points at an existing file. Keeping the JSON inside the ckpt dir
-        # makes the checkpoint self-contained for evaluation environments that
-        # do not ship ns_groups.json separately.
-        self.ns_groups_path: Optional[str] = ns_groups_path
 
         # Dual optimizer: Adagrad for sparse Embeddings, AdamW for dense params.
         self.sparse_optimizer: Optional[torch.optim.Optimizer]
@@ -128,44 +122,21 @@ class PCVRDCNv2RankingTrainer:
     def _write_sidecar_files(self, ckpt_dir: str) -> None:
         """Write sidecar files next to a ``model.pt``.
 
-        Currently persists up to three files, all overwritten on every call:
+        Currently persists up to two files, both overwritten on every call:
 
         - ``schema.json`` (copied from ``self.schema_path``): feature layout
           metadata needed to rebuild the Parquet dataset.
-        - ``ns_groups.json`` (copied from ``self.ns_groups_path`` when set
-          and the file exists): NS-token grouping used to construct the
-          tokenizer. Making a per-ckpt copy lets evaluation environments
-          consume the checkpoint without having to ship the original
-          project-level ``ns_groups.json``.
         - ``train_config.json`` (serialized from ``self.train_config``):
-          full set of training-time hyperparameters. When ``ns_groups.json``
-          is copied into ``ckpt_dir``, the ``ns_groups_json`` field is
-          rewritten to the bare filename so that ``infer.py`` resolves it
-          against ``ckpt_dir`` rather than the original absolute path on
-          the training machine.
+          full set of training-time hyperparameters.
         """
         os.makedirs(ckpt_dir, exist_ok=True)
         if self.schema_path and os.path.exists(self.schema_path):
             shutil.copy2(self.schema_path, ckpt_dir)
 
-        ns_groups_copied = False
-        if self.ns_groups_path and os.path.exists(self.ns_groups_path):
-            shutil.copy2(self.ns_groups_path, ckpt_dir)
-            ns_groups_copied = True
-
         if self.train_config:
             import json
-            cfg_to_dump = self.train_config
-            if ns_groups_copied:
-                # Override the stored path to a filename relative to ckpt_dir;
-                # infer.py already falls back to `<ckpt_dir>/<basename>` when
-                # the recorded path is not absolute, which keeps the ckpt
-                # portable across hosts.
-                cfg_to_dump = dict(self.train_config)
-                cfg_to_dump['ns_groups_json'] = os.path.basename(
-                    self.ns_groups_path)
             with open(os.path.join(ckpt_dir, 'train_config.json'), 'w') as f:
-                json.dump(cfg_to_dump, f, indent=2)
+                json.dump(self.train_config, f, indent=2)
 
     def _save_step_checkpoint(
         self,
@@ -380,15 +351,9 @@ class PCVRDCNv2RankingTrainer:
         seq_domains = device_batch['_seq_domains']
         seq_data: Dict[str, torch.Tensor] = {}
         seq_lens: Dict[str, torch.Tensor] = {}
-        seq_time_buckets: Dict[str, torch.Tensor] = {}
         for domain in seq_domains:
             seq_data[domain] = device_batch[domain]
             seq_lens[domain] = device_batch[f'{domain}_len']
-            B = device_batch[domain].shape[0]
-            L = device_batch[domain].shape[2]
-            seq_time_buckets[domain] = device_batch.get(
-                f'{domain}_time_bucket',
-                torch.zeros(B, L, dtype=torch.long, device=self.device))
         return ModelInput(
             user_int_feats=device_batch['user_int_feats'],
             item_int_feats=device_batch['item_int_feats'],
@@ -396,7 +361,6 @@ class PCVRDCNv2RankingTrainer:
             item_dense_feats=device_batch['item_dense_feats'],
             seq_data=seq_data,
             seq_lens=seq_lens,
-            seq_time_buckets=seq_time_buckets,
         )
 
     def _train_step(self, batch: Dict[str, Any]) -> float:

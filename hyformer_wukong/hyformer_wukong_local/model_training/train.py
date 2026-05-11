@@ -1,4 +1,4 @@
-"""PCVRDCNv2 training entry point (self-contained baseline).
+"""PCVRHyFormerWuKong training entry point (self-contained baseline).
 
 Usage:
     python train.py [--num_epochs 10] [--batch_size 256] ...
@@ -19,7 +19,7 @@ import torch
 
 from utils import set_seed, EarlyStopping, create_logger
 from dataset import FeatureSchema, get_pcvr_data
-from model import PCVRDCNv2
+from model import PCVRHyFormerWuKong
 from trainer import PCVRDCNv2RankingTrainer
 
 
@@ -38,7 +38,7 @@ def build_feature_specs(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="PCVRDCNv2 Training")
+    parser = argparse.ArgumentParser(description="PCVRHyFormerWuKong Training")
 
     # Paths (environment variables take precedence).
     parser.add_argument('--data_dir', type=str, default=None,
@@ -89,13 +89,26 @@ def parse_args() -> argparse.Namespace:
                         help='Backbone hidden dimension (output size of each block)')
     parser.add_argument('--emb_dim', type=int, default=64,
                         help='Per-Embedding-table dimension (before projection)')
-    parser.add_argument('--num_dcnv2_layers', '--num_hyformer_blocks', dest='num_dcnv2_layers', type=int, default=2,
-                        help='Number of stacked DCNv2 interaction layers')
+    parser.add_argument('--num_hyformer_layers', '--num_hyformer_blocks', '--num_dcnv2_layers',
+                        dest='num_hyformer_layers', type=int, default=2,
+                        help='Number of HyFormer-style Transformer encoder layers')
+    parser.add_argument('--num_heads', type=int, default=4,
+                        help='Number of attention heads in the HyFormer tower')
+    parser.add_argument('--num_wukong_layers', type=int, default=3,
+                        help='Number of WuKong layers in the WuKong tower')
+    parser.add_argument('--lcb_features', type=int, default=32,
+                        help='WuKong LCB output field count')
+    parser.add_argument('--fmb_features', type=int, default=32,
+                        help='WuKong FMB output field count')
+    parser.add_argument('--fmp_rank_k', type=int, default=8,
+                        help='WuKong optimized FM projection rank')
     parser.add_argument('--hidden_mult', type=int, default=4,
                         help='FFN inner-dim multiplier relative to d_model')
     parser.add_argument('--dropout_rate', type=float, default=0.01,
                         help='Dropout rate for the backbone '
                              '(seq id-embedding dropout is twice this value)')
+    parser.add_argument('--fusion_hidden', type=int, default=128,
+                        help='Hidden dimension of the simple fusion MLP')
     parser.add_argument('--action_num', type=int, default=1,
                         help='Classifier output dimension '
                              '(1 = single binary-classification logit; >1 = multi-label)')
@@ -204,17 +217,27 @@ def main() -> None:
         "seq_vocab_sizes": pcvr_dataset.seq_domain_vocab_sizes,
         "d_model": args.d_model,
         "emb_dim": args.emb_dim,
-        "num_dcnv2_layers": args.num_dcnv2_layers,
+        "num_hyformer_layers": args.num_hyformer_layers,
+        "num_heads": args.num_heads,
+        "num_wukong_layers": args.num_wukong_layers,
+        "lcb_features": args.lcb_features,
+        "fmb_features": args.fmb_features,
+        "fmp_rank_k": args.fmp_rank_k,
         "hidden_mult": args.hidden_mult,
         "dropout_rate": args.dropout_rate,
+        "fusion_hidden": args.fusion_hidden,
         "action_num": args.action_num,
         "emb_skip_threshold": args.emb_skip_threshold,
     }
 
-    model = PCVRDCNv2(**model_args).to(args.device)
+    model = PCVRHyFormerWuKong(**model_args).to(args.device)
 
     # Log model sizing info.
-    logging.info(f"PCVRDCNv2 model created: d_model={args.d_model}, emb_dim={args.emb_dim}, cross_layers={args.num_dcnv2_layers}")
+    logging.info(
+        f"PCVRHyFormerWuKong model created: d_model={args.d_model}, emb_dim={args.emb_dim}, "
+        f"hyformer_layers={args.num_hyformer_layers}, heads={args.num_heads}, "
+        f"wukong_layers={args.num_wukong_layers}, lcb={args.lcb_features}, fmb={args.fmb_features}"
+    )
     total_params = sum(p.numel() for p in model.parameters())
     logging.info(f"Total parameters: {total_params:,}")
 
@@ -226,7 +249,7 @@ def main() -> None:
     )
 
     ckpt_params = {
-        "layer": args.num_dcnv2_layers,
+        "layer": args.num_hyformer_layers,
         "hidden": args.d_model,
     }
 

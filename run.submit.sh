@@ -11,7 +11,7 @@ Creates:
 
 The contents are copied from sample/ or <modelname>/<modelname>_local and follow
 the competition file contract:
-  - training: 7 files
+  - training: 6 required files (+ optional ns_groups.json when the model uses it)
   - evaluation: 3 files
 
 If num_epochs is provided, the copied training train.py will be rewritten so
@@ -53,7 +53,9 @@ mkdir -p "$TRAINING_DIR" "$EVALUATION_DIR"
 
 cp -f "$TRAIN_SRC_DIR/dataset.py" "$TRAINING_DIR/"
 cp -f "$TRAIN_SRC_DIR/model.py" "$TRAINING_DIR/"
-cp -f "$TRAIN_SRC_DIR/ns_groups.json" "$TRAINING_DIR/"
+if [[ -f "$TRAIN_SRC_DIR/ns_groups.json" ]]; then
+    cp -f "$TRAIN_SRC_DIR/ns_groups.json" "$TRAINING_DIR/"
+fi
 cp -f "$TRAIN_SRC_DIR/run.sh" "$TRAINING_DIR/"
 cp -f "$TRAIN_SRC_DIR/train.py" "$TRAINING_DIR/"
 cp -f "$TRAIN_SRC_DIR/trainer.py" "$TRAINING_DIR/"

@@ -1,8 +1,8 @@
-"""PCVRDCNv2 inference script (uploaded by the contestant into the
+"""PCVRHyFormer inference script (uploaded by the contestant into the
 evaluation container).
 
 Model construction mirrors ``train.py``: we rebuild the model from
-``schema.json`` + ``train_config.json``. All model
+``schema.json`` + ``ns_groups.json`` + ``train_config.json``. All model
 hyperparameters are resolved first from the ckpt directory's
 ``train_config.json`` (written by ``trainer.py`` when saving a checkpoint),
 falling back to ``_FALLBACK_MODEL_CFG`` below (which must stay consistent
@@ -26,8 +26,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from dataset import FeatureSchema, PCVRParquetDataset
-from model import PCVRDCNv2, ModelInput
+from dataset import FeatureSchema, PCVRParquetDataset, NUM_TIME_BUCKETS
+from model import PCVRHyFormer, ModelInput
 
 
 logging.basicConfig(
@@ -43,23 +43,42 @@ logging.basicConfig(
 # fallback path is actually taken the built model will shape-mismatch the
 # saved state_dict.
 #
+# Special note on ``num_time_buckets``: this value is strictly determined by
+# ``dataset.BUCKET_BOUNDARIES`` and is NOT an independent hyperparameter.
+# When the feature is enabled we therefore use the constant exposed by the
+# dataset module; ``0`` means disabled.
 _FALLBACK_MODEL_CFG = {
     'd_model': 64,
     'emb_dim': 64,
-    'num_dcnv2_layers': 2,
+    'num_queries': 1,
+    'num_hyformer_blocks': 2,
+    'num_heads': 4,
+    'seq_encoder_type': 'transformer',
     'hidden_mult': 4,
     'dropout_rate': 0.01,
+    'seq_top_k': 50,
+    'seq_causal': False,
     'action_num': 1,
+    'num_time_buckets': NUM_TIME_BUCKETS,
+    'rank_mixer_mode': 'full',
+    'use_rope': False,
+    'rope_base': 10000.0,
     'emb_skip_threshold': 0,
+    'seq_id_threshold': 10000,
+    'ns_tokenizer_type': 'rankmixer',
+    'user_ns_tokens': 0,
+    'item_ns_tokens': 0,
 }
 
 _FALLBACK_SEQ_MAX_LENS = 'seq_a:256,seq_b:256,seq_c:512,seq_d:512'
 _FALLBACK_BATCH_SIZE = 256
 _FALLBACK_NUM_WORKERS = 16
+_DEFAULT_INFER_BATCH_SIZE = 64
+_DEFAULT_INFER_NUM_WORKERS = 4
 
 
 # Hyperparameter keys used to build the model. Everything else in
-# ``train_config.json`` is ignored when constructing ``PCVRDCNv2``.
+# ``train_config.json`` is ignored when constructing ``PCVRHyFormer``.
 _MODEL_CFG_KEYS = list(_FALLBACK_MODEL_CFG.keys())
 
 
@@ -86,6 +105,25 @@ def _parse_seq_max_lens(sml_str: str) -> Dict[str, int]:
     return seq_max_lens
 
 
+def _env_int(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if value is None or value == '':
+        return default
+    try:
+        parsed = int(value)
+    except ValueError:
+        logging.warning(f"Ignoring invalid {name}={value!r}; using {default}")
+        return default
+    return max(1, parsed)
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None or value == '':
+        return default
+    return value.lower() in {'1', 'true', 'yes', 'y', 'on'}
+
+
 def load_train_config(model_dir: str) -> Dict[str, Any]:
     """Load ``train_config.json`` from the ckpt directory.
 
@@ -109,13 +147,32 @@ def resolve_model_cfg(train_config: Dict[str, Any]) -> Dict[str, Any]:
     """Extract model hyperparameters from ``train_config``; missing keys fall
     back to ``_FALLBACK_MODEL_CFG``.
 
+    Special handling for ``num_time_buckets``: it is not exposed on the CLI
+    as an independent hyperparameter; the bucket count is uniquely determined
+    by the length of ``dataset.BUCKET_BOUNDARIES``. Resolution order:
+
+      1) ``train_config`` contains ``num_time_buckets`` directly (legacy ckpt)
+         -> use that value;
+      2) ``train_config`` contains ``use_time_buckets`` (new-style training)
+         -> derive as ``NUM_TIME_BUCKETS`` or ``0``;
+      3) neither is present -> fall back to ``_FALLBACK_MODEL_CFG[...]``.
     """
     cfg: Dict[str, Any] = {}
     for key in _MODEL_CFG_KEYS:
+        if key == 'num_time_buckets':
+            if 'num_time_buckets' in train_config:
+                cfg[key] = train_config['num_time_buckets']
+            elif 'use_time_buckets' in train_config:
+                cfg[key] = NUM_TIME_BUCKETS if train_config['use_time_buckets'] else 0
+            else:
+                cfg[key] = _FALLBACK_MODEL_CFG[key]
+                logging.warning(
+                    f"train_config missing both 'num_time_buckets' and 'use_time_buckets', "
+                    f"using fallback = {cfg[key]}")
+            continue
+
         if key in train_config:
             cfg[key] = train_config[key]
-        elif key == 'num_dcnv2_layers' and 'num_hyformer_blocks' in train_config:
-            cfg[key] = train_config['num_hyformer_blocks']
         else:
             cfg[key] = _FALLBACK_MODEL_CFG[key]
             logging.warning(
@@ -126,29 +183,73 @@ def resolve_model_cfg(train_config: Dict[str, Any]) -> Dict[str, Any]:
 def build_model(
     dataset: PCVRParquetDataset,
     model_cfg: Dict[str, Any],
+    ns_groups_json: Optional[str] = None,
     device: str = 'cpu',
-) -> PCVRDCNv2:
-    """Construct a ``PCVRDCNv2`` from the dataset schema and model config.
+) -> PCVRHyFormer:
+    """Construct a ``PCVRHyFormer`` from the dataset schema, an NS-groups JSON,
+    and a resolved ``model_cfg`` dict.
 
     Args:
         dataset: a ``PCVRParquetDataset`` providing the feature schema.
         model_cfg: resolved model hyperparameters, typically the output of
             ``resolve_model_cfg``.
+        ns_groups_json: path to the NS-groups JSON file, or ``None`` / empty
+            string to disable it (each feature becomes its own singleton group).
         device: torch device.
     """
+    # NS grouping. The JSON schema uses *fid* (feature id) values; convert
+    # them to positional indices into ``user_int_schema.entries`` /
+    # ``item_int_schema.entries`` so ``GroupNSTokenizer`` /
+    # ``RankMixerNSTokenizer`` can index ``feature_specs`` directly. This is
+    # the same conversion ``train.py`` performs when loading the JSON; doing
+    # it here keeps infer.py symmetric with training.
+    user_ns_groups: List[List[int]]
+    item_ns_groups: List[List[int]]
+    if ns_groups_json and os.path.exists(ns_groups_json):
+        logging.info(f"Loading NS groups from {ns_groups_json}")
+        with open(ns_groups_json, 'r') as f:
+            ns_groups_cfg = json.load(f)
+        user_fid_to_idx = {
+            fid: i for i, (fid, _, _) in enumerate(dataset.user_int_schema.entries)
+        }
+        item_fid_to_idx = {
+            fid: i for i, (fid, _, _) in enumerate(dataset.item_int_schema.entries)
+        }
+        try:
+            user_ns_groups = [
+                [user_fid_to_idx[f] for f in fids]
+                for fids in ns_groups_cfg['user_ns_groups'].values()
+            ]
+            item_ns_groups = [
+                [item_fid_to_idx[f] for f in fids]
+                for fids in ns_groups_cfg['item_ns_groups'].values()
+            ]
+        except KeyError as exc:
+            raise KeyError(
+                f"NS-groups JSON references fid {exc.args[0]} which is not "
+                f"present in the checkpoint's schema.json. The ns_groups.json "
+                f"and schema.json must come from the same training run."
+            ) from exc
+    else:
+        logging.info("No NS groups JSON found, using default: each feature as one group")
+        user_ns_groups = [[i] for i in range(len(dataset.user_int_schema.entries))]
+        item_ns_groups = [[i] for i in range(len(dataset.item_int_schema.entries))]
+
     # Feature specs.
     user_int_feature_specs = build_feature_specs(
         dataset.user_int_schema, dataset.user_int_vocab_sizes)
     item_int_feature_specs = build_feature_specs(
         dataset.item_int_schema, dataset.item_int_vocab_sizes)
 
-    logging.info(f"Building PCVRDCNv2 with cfg: {model_cfg}")
-    model = PCVRDCNv2(
+    logging.info(f"Building PCVRHyFormer with cfg: {model_cfg}")
+    model = PCVRHyFormer(
         user_int_feature_specs=user_int_feature_specs,
         item_int_feature_specs=item_int_feature_specs,
         user_dense_dim=dataset.user_dense_schema.total_dim,
         item_dense_dim=dataset.item_dense_schema.total_dim,
         seq_vocab_sizes=dataset.seq_domain_vocab_sizes,
+        user_ns_groups=user_ns_groups,
+        item_ns_groups=item_ns_groups,
         **model_cfg,
     ).to(device)
 
@@ -203,9 +304,14 @@ def _batch_to_model_input(
     seq_domains = device_batch['_seq_domains']
     seq_data: Dict[str, torch.Tensor] = {}
     seq_lens: Dict[str, torch.Tensor] = {}
+    seq_time_buckets: Dict[str, torch.Tensor] = {}
     for domain in seq_domains:
         seq_data[domain] = device_batch[domain]
         seq_lens[domain] = device_batch[f'{domain}_len']
+        B, _, L = device_batch[domain].shape
+        seq_time_buckets[domain] = device_batch.get(
+            f'{domain}_time_bucket',
+            torch.zeros(B, L, dtype=torch.long, device=device))
 
     return ModelInput(
         user_int_feats=device_batch['user_int_feats'],
@@ -214,7 +320,82 @@ def _batch_to_model_input(
         item_dense_feats=device_batch['item_dense_feats'],
         seq_data=seq_data,
         seq_lens=seq_lens,
+        seq_time_buckets=seq_time_buckets,
     )
+
+
+def _slice_batch(batch: Dict[str, Any], start: int, end: int) -> Dict[str, Any]:
+    """Slice a CPU batch before moving tensors to CUDA.
+
+    ``PCVRParquetDataset`` already yields full tensor batches. Slicing first
+    keeps peak GPU memory bounded by the inference micro-batch size rather
+    than by the dataset batch size.
+    """
+    sliced: Dict[str, Any] = {}
+    for k, v in batch.items():
+        if isinstance(v, torch.Tensor):
+            sliced[k] = v[start:end]
+        elif k == 'user_id':
+            sliced[k] = v[start:end]
+        else:
+            sliced[k] = v
+    return sliced
+
+
+def _batch_size_of(batch: Dict[str, Any]) -> int:
+    labels = batch.get('label')
+    if isinstance(labels, torch.Tensor):
+        return int(labels.shape[0])
+    user_ids = batch.get('user_id', [])
+    return len(user_ids)
+
+
+def _is_cuda_oom(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    oom_error = getattr(torch.cuda, 'OutOfMemoryError', RuntimeError)
+    return isinstance(exc, oom_error) or ('cuda' in msg and 'out of memory' in msg)
+
+
+def _infer_batch_adaptive(
+    model: nn.Module,
+    batch: Dict[str, Any],
+    device: str,
+    micro_batch_size: int,
+    use_amp: bool,
+) -> Tuple[List[float], int]:
+    """Infer one dataset batch, halving micro-batch size on CUDA OOM."""
+    batch_size = _batch_size_of(batch)
+    probs_out: List[float] = []
+    start = 0
+    cur_micro_batch_size = max(1, min(micro_batch_size, batch_size))
+
+    while start < batch_size:
+        end = min(start + cur_micro_batch_size, batch_size)
+        micro_batch = _slice_batch(batch, start, end)
+        try:
+            model_input = _batch_to_model_input(micro_batch, device)
+            with torch.autocast(
+                device_type='cuda',
+                dtype=torch.float16,
+                enabled=(use_amp and device.startswith('cuda')),
+            ):
+                logits, embedding = model.predict(model_input)
+                logits = logits.squeeze(-1)
+                probs = torch.sigmoid(logits).detach().cpu().float().numpy()
+            probs_out.extend(probs.tolist())
+            start = end
+            del model_input, logits, embedding, probs, micro_batch
+        except RuntimeError as exc:
+            if not _is_cuda_oom(exc) or cur_micro_batch_size == 1:
+                raise
+            logging.warning(
+                f"CUDA OOM at inference micro_batch_size={cur_micro_batch_size}; "
+                f"retrying with {max(1, cur_micro_batch_size // 2)}")
+            cur_micro_batch_size = max(1, cur_micro_batch_size // 2)
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+    return probs_out, cur_micro_batch_size
 
 
 def main() -> None:
@@ -242,14 +423,23 @@ def main() -> None:
     seq_max_lens = _parse_seq_max_lens(sml_str)
     logging.info(f"seq_max_lens: {seq_max_lens}")
 
-    # ---- Data loading: use a conservative inference batch size to avoid GPU OOM ----
+    # ---- Data loading: use conservative inference defaults to avoid OOM ----
     train_batch_size = int(train_config.get('batch_size', _FALLBACK_BATCH_SIZE))
-    batch_size = min(train_batch_size, 32)
-    num_workers = min(int(train_config.get('num_workers', _FALLBACK_NUM_WORKERS)), 4)
-    logging.info(
-        f"Inference loader config: train_batch_size={train_batch_size}, "
-        f"effective_batch_size={batch_size}, num_workers={num_workers}"
+    train_num_workers = int(train_config.get('num_workers', _FALLBACK_NUM_WORKERS))
+    batch_size = _env_int(
+        'PCVR_INFER_BATCH_SIZE',
+        min(train_batch_size, _DEFAULT_INFER_BATCH_SIZE),
     )
+    micro_batch_size = _env_int('PCVR_INFER_MICRO_BATCH_SIZE', batch_size)
+    num_workers = _env_int(
+        'PCVR_INFER_NUM_WORKERS',
+        min(train_num_workers, _DEFAULT_INFER_NUM_WORKERS),
+    )
+    use_amp = _env_bool('PCVR_INFER_AMP', torch.cuda.is_available())
+    logging.info(
+        f"Inference memory settings: batch_size={batch_size}, "
+        f"micro_batch_size={micro_batch_size}, num_workers={num_workers}, "
+        f"amp={use_amp}")
 
     test_dataset = PCVRParquetDataset(
         parquet_path=data_dir,
@@ -266,9 +456,21 @@ def main() -> None:
     # ---- Build model: every structural hyperparameter is resolved from train_config ----
     model_cfg = resolve_model_cfg(train_config)
 
+    # ns_groups_json also comes from training config (e.g. run.sh may have
+    # passed an empty string to disable it). When trainer.py has copied the
+    # JSON into the ckpt dir, train_config records just the basename, so try
+    # resolving against ``model_dir`` first before honoring the raw (possibly
+    # absolute) path as a fallback.
+    ns_groups_json = train_config.get('ns_groups_json', None)
+    if ns_groups_json:
+        local_candidate = os.path.join(model_dir, os.path.basename(ns_groups_json))
+        if os.path.exists(local_candidate):
+            ns_groups_json = local_candidate
+
     model = build_model(
         test_dataset,
         model_cfg=model_cfg,
+        ns_groups_json=ns_groups_json,
         device=device,
     )
 
@@ -292,7 +494,7 @@ def main() -> None:
         test_dataset,
         batch_size=None,
         num_workers=num_workers,
-        prefetch_factor=2,
+        prefetch_factor=2 if num_workers > 0 else None,
         pin_memory=torch.cuda.is_available(),
     )
 
@@ -300,19 +502,21 @@ def main() -> None:
     all_user_ids = []
     logging.info("Starting inference...")
 
-    with torch.no_grad():
+    with torch.inference_mode():
         for batch_idx, batch in enumerate(test_loader):
-            model_input = _batch_to_model_input(batch, device)
             user_ids = batch.get('user_id', [])
-
-            logits, _ = model.predict(model_input)
-            logits = logits.squeeze(-1)
-            probs = torch.sigmoid(logits).cpu().numpy()
-            all_probs.extend(probs.tolist())
+            probs, micro_batch_size = _infer_batch_adaptive(
+                model=model,
+                batch=batch,
+                device=device,
+                micro_batch_size=micro_batch_size,
+                use_amp=use_amp,
+            )
+            all_probs.extend(probs)
             all_user_ids.extend(user_ids)
 
             if (batch_idx + 1) % 100 == 0:
-                logging.info(f"  Processed {(batch_idx + 1) * batch_size} samples")
+                logging.info(f"  Processed {len(all_probs)} samples")
 
     logging.info(f"Inference complete: {len(all_probs)} predictions")
 

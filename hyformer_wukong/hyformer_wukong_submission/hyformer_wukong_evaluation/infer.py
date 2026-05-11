@@ -1,4 +1,4 @@
-"""PCVRDCNv2 inference script (uploaded by the contestant into the
+"""PCVRHyFormerWuKong inference script (uploaded by the contestant into the
 evaluation container).
 
 Model construction mirrors ``train.py``: we rebuild the model from
@@ -27,7 +27,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from dataset import FeatureSchema, PCVRParquetDataset
-from model import PCVRDCNv2, ModelInput
+from model import PCVRHyFormerWuKong, ModelInput
 
 
 logging.basicConfig(
@@ -46,9 +46,15 @@ logging.basicConfig(
 _FALLBACK_MODEL_CFG = {
     'd_model': 64,
     'emb_dim': 64,
-    'num_dcnv2_layers': 2,
+    'num_hyformer_layers': 2,
+    'num_heads': 4,
+    'num_wukong_layers': 3,
+    'lcb_features': 32,
+    'fmb_features': 32,
+    'fmp_rank_k': 8,
     'hidden_mult': 4,
     'dropout_rate': 0.01,
+    'fusion_hidden': 128,
     'action_num': 1,
     'emb_skip_threshold': 0,
 }
@@ -114,8 +120,10 @@ def resolve_model_cfg(train_config: Dict[str, Any]) -> Dict[str, Any]:
     for key in _MODEL_CFG_KEYS:
         if key in train_config:
             cfg[key] = train_config[key]
-        elif key == 'num_dcnv2_layers' and 'num_hyformer_blocks' in train_config:
+        elif key == 'num_hyformer_layers' and 'num_hyformer_blocks' in train_config:
             cfg[key] = train_config['num_hyformer_blocks']
+        elif key == 'num_hyformer_layers' and 'num_dcnv2_layers' in train_config:
+            cfg[key] = train_config['num_dcnv2_layers']
         else:
             cfg[key] = _FALLBACK_MODEL_CFG[key]
             logging.warning(
@@ -127,8 +135,8 @@ def build_model(
     dataset: PCVRParquetDataset,
     model_cfg: Dict[str, Any],
     device: str = 'cpu',
-) -> PCVRDCNv2:
-    """Construct a ``PCVRDCNv2`` from the dataset schema and model config.
+) -> PCVRHyFormerWuKong:
+    """Construct a ``PCVRHyFormerWuKong`` from the dataset schema and model config.
 
     Args:
         dataset: a ``PCVRParquetDataset`` providing the feature schema.
@@ -142,8 +150,8 @@ def build_model(
     item_int_feature_specs = build_feature_specs(
         dataset.item_int_schema, dataset.item_int_vocab_sizes)
 
-    logging.info(f"Building PCVRDCNv2 with cfg: {model_cfg}")
-    model = PCVRDCNv2(
+    logging.info(f"Building PCVRHyFormerWuKong with cfg: {model_cfg}")
+    model = PCVRHyFormerWuKong(
         user_int_feature_specs=user_int_feature_specs,
         item_int_feature_specs=item_int_feature_specs,
         user_dense_dim=dataset.user_dense_schema.total_dim,

@@ -1,10 +1,8 @@
 import logging
-import math
-from typing import Dict, List, NamedTuple, Optional, Set, Tuple
+from typing import Dict, List, NamedTuple, Set, Tuple
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class ModelInput(NamedTuple):
@@ -14,7 +12,6 @@ class ModelInput(NamedTuple):
     item_dense_feats: torch.Tensor
     seq_data: dict
     seq_lens: dict
-    seq_time_buckets: dict
 
 
 class CrossNetV2(nn.Module):
@@ -175,35 +172,19 @@ class PCVRDCNv2(nn.Module):
         user_dense_dim: int,
         item_dense_dim: int,
         seq_vocab_sizes: Dict[str, List[int]],
-        user_ns_groups: List[List[int]],
-        item_ns_groups: List[List[int]],
         d_model: int = 64,
         emb_dim: int = 64,
-        num_queries: int = 1,
         num_dcnv2_layers: int = 2,
-        num_heads: int = 4,
-        seq_encoder_type: str = 'transformer',
         hidden_mult: int = 4,
         dropout_rate: float = 0.01,
-        seq_top_k: int = 50,
-        seq_causal: bool = False,
         action_num: int = 1,
-        num_time_buckets: int = 65,
-        rank_mixer_mode: str = 'full',
-        use_rope: bool = False,
-        rope_base: float = 10000.0,
         emb_skip_threshold: int = 0,
-        seq_id_threshold: int = 10000,
-        ns_tokenizer_type: str = 'rankmixer',
-        user_ns_tokens: int = 0,
-        item_ns_tokens: int = 0,
     ) -> None:
         super().__init__()
         self.emb_skip_threshold = emb_skip_threshold
         self.user_int_block = PooledEmbeddingBlock(user_int_feature_specs, emb_dim, emb_skip_threshold)
         self.item_int_block = PooledEmbeddingBlock(item_int_feature_specs, emb_dim, emb_skip_threshold)
         self.seq_domains = sorted(seq_vocab_sizes.keys())
-        self.num_ns = int(user_ns_tokens) + int(item_ns_tokens) + (1 if user_dense_dim > 0 else 0)
         self.seq_blocks = nn.ModuleDict({
             domain: SequencePoolingBlock(vocab_sizes, emb_dim, d_model, emb_skip_threshold)
             for domain, vocab_sizes in seq_vocab_sizes.items()

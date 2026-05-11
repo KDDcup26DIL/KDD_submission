@@ -1,4 +1,4 @@
-"""PCVRDCNv2 training entry point (self-contained baseline).
+"""PCVRHyFormer training entry point (self-contained baseline).
 
 Usage:
     python train.py [--num_epochs 10] [--batch_size 256] ...
@@ -10,6 +10,7 @@ Environment variables (take precedence over CLI flags):
 """
 
 import os
+import json
 import argparse
 import logging
 from pathlib import Path
@@ -18,9 +19,9 @@ from typing import List, Tuple
 import torch
 
 from utils import set_seed, EarlyStopping, create_logger
-from dataset import FeatureSchema, get_pcvr_data
-from model import PCVRDCNv2
-from trainer import PCVRDCNv2RankingTrainer
+from dataset import FeatureSchema, get_pcvr_data, NUM_TIME_BUCKETS
+from model import PCVRHyFormer
+from trainer import PCVRHyFormerRankingTrainer
 
 
 def build_feature_specs(
@@ -38,7 +39,7 @@ def build_feature_specs(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="PCVRDCNv2 Training")
+    parser = argparse.ArgumentParser(description="PCVRHyFormer Training")
 
     # Paths (environment variables take precedence).
     parser.add_argument('--data_dir', type=str, default=None,
@@ -89,16 +90,49 @@ def parse_args() -> argparse.Namespace:
                         help='Backbone hidden dimension (output size of each block)')
     parser.add_argument('--emb_dim', type=int, default=64,
                         help='Per-Embedding-table dimension (before projection)')
-    parser.add_argument('--num_dcnv2_layers', '--num_hyformer_blocks', dest='num_dcnv2_layers', type=int, default=2,
-                        help='Number of stacked DCNv2 interaction layers')
+    parser.add_argument('--num_queries', type=int, default=1,
+                        help='Number of Query tokens generated independently per sequence domain')
+    parser.add_argument('--num_hyformer_blocks', type=int, default=4,
+                        help='Number of stacked MultiSeqHyFormerBlock layers')
+    parser.add_argument('--num_heads', type=int, default=4,
+                        help='Number of attention heads (must satisfy d_model %% num_heads == 0)')
+    parser.add_argument('--seq_encoder_type', type=str, default='transformer',
+                        choices=['swiglu', 'transformer', 'longer'],
+                        help='Sequence encoder variant: '
+                             'swiglu = SwiGLU without attention, '
+                             'transformer = standard self-attention, '
+                             'longer = Top-K compressed encoder '
+                             '(only this variant consumes --seq_top_k / --seq_causal)')
     parser.add_argument('--hidden_mult', type=int, default=4,
                         help='FFN inner-dim multiplier relative to d_model')
     parser.add_argument('--dropout_rate', type=float, default=0.01,
                         help='Dropout rate for the backbone '
                              '(seq id-embedding dropout is twice this value)')
+    parser.add_argument('--seq_top_k', type=int, default=50,
+                        help='Number of most-recent tokens kept by LongerEncoder '
+                             '(only effective when --seq_encoder_type=longer)')
+    parser.add_argument('--seq_causal', action='store_true', default=False,
+                        help='Whether the LongerEncoder self-attention uses a causal mask '
+                             '(only effective when --seq_encoder_type=longer)')
     parser.add_argument('--action_num', type=int, default=1,
                         help='Classifier output dimension '
                              '(1 = single binary-classification logit; >1 = multi-label)')
+    parser.add_argument('--use_time_buckets', action='store_true', default=True,
+                        help='Enable the time-bucket embedding (default on). '
+                             'The actual bucket count is uniquely determined by '
+                             'dataset.BUCKET_BOUNDARIES; this flag is a pure on/off switch.')
+    parser.add_argument('--no_time_buckets', dest='use_time_buckets', action='store_false',
+                        help='Disable the time-bucket embedding')
+    parser.add_argument('--rank_mixer_mode', type=str, default='full',
+                        choices=['full', 'ffn_only', 'none'],
+                        help='RankMixerBlock mode: '
+                             'full = token mixing + per-token FFN (requires d_model divisible by T), '
+                             'ffn_only = per-token FFN only, '
+                             'none = identity passthrough')
+    parser.add_argument('--use_rope', action='store_true', default=False,
+                        help='Enable RoPE positional encoding in sequence attention')
+    parser.add_argument('--rope_base', type=float, default=10000.0,
+                        help='RoPE base frequency (default 10000)')
 
     # Loss function.
     parser.add_argument('--loss_type', type=str, default='bce', choices=['bce', 'focal'],
@@ -133,6 +167,33 @@ def parse_args() -> argparse.Namespace:
                              'by a zero vector at forward time (0 = no skipping; '
                              'all features get an Embedding). Useful for saving GPU '
                              'memory on ultra-high-cardinality features.')
+    parser.add_argument('--seq_id_threshold', type=int, default=10000,
+                        help='Within the sequence tokenizer, features with vocab_size '
+                             'exceeding this value are treated as id features and receive '
+                             'extra dropout(rate*2) during training to reduce overfitting. '
+                             'Features at or below this threshold are treated as side-info '
+                             'and receive no extra dropout.')
+
+    _default_ns_groups = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), 'ns_groups.json')
+    parser.add_argument('--ns_groups_json', type=str, default=_default_ns_groups,
+                        help='Path to the NS-groups JSON file. If it does not exist, '
+                             'each feature is placed in its own singleton group.')
+
+    # NS tokenizer variant.
+    parser.add_argument('--ns_tokenizer_type', type=str, default='rankmixer',
+                        choices=['group', 'rankmixer'],
+                        help='NS tokenizer variant: '
+                             'group = project each group to one token, '
+                             'rankmixer = concatenate all embeddings then split into '
+                             'equal-size chunks (token count is tunable)')
+    parser.add_argument('--user_ns_tokens', type=int, default=0,
+                        help='Number of user NS tokens in rankmixer mode '
+                             '(0 = automatically use the number of user groups)')
+    parser.add_argument('--item_ns_tokens', type=int, default=0,
+                        help='Number of item NS tokens in rankmixer mode '
+                             '(0 = automatically use the number of item groups)')
+
     args = parser.parse_args()
 
     # Environment variables take precedence.
@@ -190,6 +251,22 @@ def main() -> None:
         seq_max_lens=seq_max_lens,
     )
 
+    # ---- NS groups ----
+    if args.ns_groups_json and os.path.exists(args.ns_groups_json):
+        logging.info(f"Loading NS groups from {args.ns_groups_json}")
+        with open(args.ns_groups_json, 'r') as f:
+            ns_groups_cfg = json.load(f)
+        user_fid_to_idx = {fid: i for i, (fid, _, _) in enumerate(pcvr_dataset.user_int_schema.entries)}
+        item_fid_to_idx = {fid: i for i, (fid, _, _) in enumerate(pcvr_dataset.item_int_schema.entries)}
+        user_ns_groups = [[user_fid_to_idx[f] for f in fids] for fids in ns_groups_cfg['user_ns_groups'].values()]
+        item_ns_groups = [[item_fid_to_idx[f] for f in fids] for fids in ns_groups_cfg['item_ns_groups'].values()]
+        logging.info(f"User NS groups ({len(user_ns_groups)}): {list(ns_groups_cfg['user_ns_groups'].keys())}")
+        logging.info(f"Item NS groups ({len(item_ns_groups)}): {list(ns_groups_cfg['item_ns_groups'].keys())}")
+    else:
+        logging.info("No NS groups JSON found, using default: each feature as one group")
+        user_ns_groups = [[i] for i in range(len(pcvr_dataset.user_int_schema.entries))]
+        item_ns_groups = [[i] for i in range(len(pcvr_dataset.item_int_schema.entries))]
+
     # ---- Build model ----
     user_int_feature_specs = build_feature_specs(
         pcvr_dataset.user_int_schema, pcvr_dataset.user_int_vocab_sizes)
@@ -202,19 +279,39 @@ def main() -> None:
         "user_dense_dim": pcvr_dataset.user_dense_schema.total_dim,
         "item_dense_dim": pcvr_dataset.item_dense_schema.total_dim,
         "seq_vocab_sizes": pcvr_dataset.seq_domain_vocab_sizes,
+        "user_ns_groups": user_ns_groups,
+        "item_ns_groups": item_ns_groups,
         "d_model": args.d_model,
         "emb_dim": args.emb_dim,
-        "num_dcnv2_layers": args.num_dcnv2_layers,
+        "num_queries": args.num_queries,
+        "num_hyformer_blocks": args.num_hyformer_blocks,
+        "num_heads": args.num_heads,
+        "seq_encoder_type": args.seq_encoder_type,
         "hidden_mult": args.hidden_mult,
         "dropout_rate": args.dropout_rate,
+        "seq_top_k": args.seq_top_k,
+        "seq_causal": args.seq_causal,
         "action_num": args.action_num,
+        "num_time_buckets": NUM_TIME_BUCKETS if args.use_time_buckets else 0,
+        "rank_mixer_mode": args.rank_mixer_mode,
+        "use_rope": args.use_rope,
+        "rope_base": args.rope_base,
         "emb_skip_threshold": args.emb_skip_threshold,
+        "seq_id_threshold": args.seq_id_threshold,
+        "ns_tokenizer_type": args.ns_tokenizer_type,
+        "user_ns_tokens": args.user_ns_tokens,
+        "item_ns_tokens": args.item_ns_tokens,
     }
 
-    model = PCVRDCNv2(**model_args).to(args.device)
+    model = PCVRHyFormer(**model_args).to(args.device)
 
     # Log model sizing info.
-    logging.info(f"PCVRDCNv2 model created: d_model={args.d_model}, emb_dim={args.emb_dim}, cross_layers={args.num_dcnv2_layers}")
+    num_sequences = len(pcvr_dataset.seq_domains)
+    num_ns = model.num_ns
+    T = args.num_queries * num_sequences + num_ns
+    logging.info(f"PCVRHyFormer model created: num_ns={num_ns}, T={T}, d_model={args.d_model}, rank_mixer_mode={args.rank_mixer_mode}")
+    logging.info(f"User NS groups: {user_ns_groups}")
+    logging.info(f"Item NS groups: {item_ns_groups}")
     total_params = sum(p.numel() for p in model.parameters())
     logging.info(f"Total parameters: {total_params:,}")
 
@@ -226,11 +323,12 @@ def main() -> None:
     )
 
     ckpt_params = {
-        "layer": args.num_dcnv2_layers,
+        "layer": args.num_hyformer_blocks,
+        "head": args.num_heads,
         "hidden": args.d_model,
     }
 
-    trainer = PCVRDCNv2RankingTrainer(
+    trainer = PCVRHyFormerRankingTrainer(
         model=model,
         train_loader=train_loader,
         valid_loader=valid_loader,
@@ -249,6 +347,7 @@ def main() -> None:
         ckpt_params=ckpt_params,
         writer=writer,
         schema_path=schema_path,
+        ns_groups_path=args.ns_groups_json if args.ns_groups_json and os.path.exists(args.ns_groups_json) else None,
         eval_every_n_steps=args.eval_every_n_steps,
         train_config=vars(args),
     )

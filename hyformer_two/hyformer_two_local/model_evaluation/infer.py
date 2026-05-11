@@ -1,8 +1,8 @@
-"""PCVRDCNv2 inference script (uploaded by the contestant into the
+"""PCVRHyFormer inference script (uploaded by the contestant into the
 evaluation container).
 
 Model construction mirrors ``train.py``: we rebuild the model from
-``schema.json`` + ``train_config.json``. All model
+``schema.json`` + ``ns_groups.json`` + ``train_config.json``. All model
 hyperparameters are resolved first from the ckpt directory's
 ``train_config.json`` (written by ``trainer.py`` when saving a checkpoint),
 falling back to ``_FALLBACK_MODEL_CFG`` below (which must stay consistent
@@ -26,8 +26,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from dataset import FeatureSchema, PCVRParquetDataset
-from model import PCVRDCNv2, ModelInput
+from dataset import FeatureSchema, PCVRParquetDataset, NUM_TIME_BUCKETS
+from model import PCVRHyFormer, ModelInput
 
 
 logging.basicConfig(
@@ -43,23 +43,40 @@ logging.basicConfig(
 # fallback path is actually taken the built model will shape-mismatch the
 # saved state_dict.
 #
+# Special note on ``num_time_buckets``: this value is strictly determined by
+# ``dataset.BUCKET_BOUNDARIES`` and is NOT an independent hyperparameter.
+# When the feature is enabled we therefore use the constant exposed by the
+# dataset module; ``0`` means disabled.
 _FALLBACK_MODEL_CFG = {
     'd_model': 64,
     'emb_dim': 64,
-    'num_dcnv2_layers': 2,
+    'num_queries': 1,
+    'num_hyformer_blocks': 2,
+    'num_heads': 4,
+    'seq_encoder_type': 'transformer',
     'hidden_mult': 4,
     'dropout_rate': 0.01,
+    'seq_top_k': 50,
+    'seq_causal': False,
     'action_num': 1,
+    'num_time_buckets': NUM_TIME_BUCKETS,
+    'rank_mixer_mode': 'full',
+    'use_rope': False,
+    'rope_base': 10000.0,
     'emb_skip_threshold': 0,
+    'seq_id_threshold': 10000,
+    'ns_tokenizer_type': 'rankmixer',
+    'user_ns_tokens': 0,
+    'item_ns_tokens': 0,
 }
 
 _FALLBACK_SEQ_MAX_LENS = 'seq_a:256,seq_b:256,seq_c:512,seq_d:512'
-_FALLBACK_BATCH_SIZE = 256
+_FALLBACK_BATCH_SIZE = 32
 _FALLBACK_NUM_WORKERS = 16
 
 
 # Hyperparameter keys used to build the model. Everything else in
-# ``train_config.json`` is ignored when constructing ``PCVRDCNv2``.
+# ``train_config.json`` is ignored when constructing ``PCVRHyFormer``.
 _MODEL_CFG_KEYS = list(_FALLBACK_MODEL_CFG.keys())
 
 
@@ -109,13 +126,32 @@ def resolve_model_cfg(train_config: Dict[str, Any]) -> Dict[str, Any]:
     """Extract model hyperparameters from ``train_config``; missing keys fall
     back to ``_FALLBACK_MODEL_CFG``.
 
+    Special handling for ``num_time_buckets``: it is not exposed on the CLI
+    as an independent hyperparameter; the bucket count is uniquely determined
+    by the length of ``dataset.BUCKET_BOUNDARIES``. Resolution order:
+
+      1) ``train_config`` contains ``num_time_buckets`` directly (legacy ckpt)
+         -> use that value;
+      2) ``train_config`` contains ``use_time_buckets`` (new-style training)
+         -> derive as ``NUM_TIME_BUCKETS`` or ``0``;
+      3) neither is present -> fall back to ``_FALLBACK_MODEL_CFG[...]``.
     """
     cfg: Dict[str, Any] = {}
     for key in _MODEL_CFG_KEYS:
+        if key == 'num_time_buckets':
+            if 'num_time_buckets' in train_config:
+                cfg[key] = train_config['num_time_buckets']
+            elif 'use_time_buckets' in train_config:
+                cfg[key] = NUM_TIME_BUCKETS if train_config['use_time_buckets'] else 0
+            else:
+                cfg[key] = _FALLBACK_MODEL_CFG[key]
+                logging.warning(
+                    f"train_config missing both 'num_time_buckets' and 'use_time_buckets', "
+                    f"using fallback = {cfg[key]}")
+            continue
+
         if key in train_config:
             cfg[key] = train_config[key]
-        elif key == 'num_dcnv2_layers' and 'num_hyformer_blocks' in train_config:
-            cfg[key] = train_config['num_hyformer_blocks']
         else:
             cfg[key] = _FALLBACK_MODEL_CFG[key]
             logging.warning(
@@ -126,29 +162,73 @@ def resolve_model_cfg(train_config: Dict[str, Any]) -> Dict[str, Any]:
 def build_model(
     dataset: PCVRParquetDataset,
     model_cfg: Dict[str, Any],
+    ns_groups_json: Optional[str] = None,
     device: str = 'cpu',
-) -> PCVRDCNv2:
-    """Construct a ``PCVRDCNv2`` from the dataset schema and model config.
+) -> PCVRHyFormer:
+    """Construct a ``PCVRHyFormer`` from the dataset schema, an NS-groups JSON,
+    and a resolved ``model_cfg`` dict.
 
     Args:
         dataset: a ``PCVRParquetDataset`` providing the feature schema.
         model_cfg: resolved model hyperparameters, typically the output of
             ``resolve_model_cfg``.
+        ns_groups_json: path to the NS-groups JSON file, or ``None`` / empty
+            string to disable it (each feature becomes its own singleton group).
         device: torch device.
     """
+    # NS grouping. The JSON schema uses *fid* (feature id) values; convert
+    # them to positional indices into ``user_int_schema.entries`` /
+    # ``item_int_schema.entries`` so ``GroupNSTokenizer`` /
+    # ``RankMixerNSTokenizer`` can index ``feature_specs`` directly. This is
+    # the same conversion ``train.py`` performs when loading the JSON; doing
+    # it here keeps infer.py symmetric with training.
+    user_ns_groups: List[List[int]]
+    item_ns_groups: List[List[int]]
+    if ns_groups_json and os.path.exists(ns_groups_json):
+        logging.info(f"Loading NS groups from {ns_groups_json}")
+        with open(ns_groups_json, 'r') as f:
+            ns_groups_cfg = json.load(f)
+        user_fid_to_idx = {
+            fid: i for i, (fid, _, _) in enumerate(dataset.user_int_schema.entries)
+        }
+        item_fid_to_idx = {
+            fid: i for i, (fid, _, _) in enumerate(dataset.item_int_schema.entries)
+        }
+        try:
+            user_ns_groups = [
+                [user_fid_to_idx[f] for f in fids]
+                for fids in ns_groups_cfg['user_ns_groups'].values()
+            ]
+            item_ns_groups = [
+                [item_fid_to_idx[f] for f in fids]
+                for fids in ns_groups_cfg['item_ns_groups'].values()
+            ]
+        except KeyError as exc:
+            raise KeyError(
+                f"NS-groups JSON references fid {exc.args[0]} which is not "
+                f"present in the checkpoint's schema.json. The ns_groups.json "
+                f"and schema.json must come from the same training run."
+            ) from exc
+    else:
+        logging.info("No NS groups JSON found, using default: each feature as one group")
+        user_ns_groups = [[i] for i in range(len(dataset.user_int_schema.entries))]
+        item_ns_groups = [[i] for i in range(len(dataset.item_int_schema.entries))]
+
     # Feature specs.
     user_int_feature_specs = build_feature_specs(
         dataset.user_int_schema, dataset.user_int_vocab_sizes)
     item_int_feature_specs = build_feature_specs(
         dataset.item_int_schema, dataset.item_int_vocab_sizes)
 
-    logging.info(f"Building PCVRDCNv2 with cfg: {model_cfg}")
-    model = PCVRDCNv2(
+    logging.info(f"Building PCVRHyFormer with cfg: {model_cfg}")
+    model = PCVRHyFormer(
         user_int_feature_specs=user_int_feature_specs,
         item_int_feature_specs=item_int_feature_specs,
         user_dense_dim=dataset.user_dense_schema.total_dim,
         item_dense_dim=dataset.item_dense_schema.total_dim,
         seq_vocab_sizes=dataset.seq_domain_vocab_sizes,
+        user_ns_groups=user_ns_groups,
+        item_ns_groups=item_ns_groups,
         **model_cfg,
     ).to(device)
 
@@ -203,9 +283,14 @@ def _batch_to_model_input(
     seq_domains = device_batch['_seq_domains']
     seq_data: Dict[str, torch.Tensor] = {}
     seq_lens: Dict[str, torch.Tensor] = {}
+    seq_time_buckets: Dict[str, torch.Tensor] = {}
     for domain in seq_domains:
         seq_data[domain] = device_batch[domain]
         seq_lens[domain] = device_batch[f'{domain}_len']
+        B, _, L = device_batch[domain].shape
+        seq_time_buckets[domain] = device_batch.get(
+            f'{domain}_time_bucket',
+            torch.zeros(B, L, dtype=torch.long, device=device))
 
     return ModelInput(
         user_int_feats=device_batch['user_int_feats'],
@@ -214,6 +299,7 @@ def _batch_to_model_input(
         item_dense_feats=device_batch['item_dense_feats'],
         seq_data=seq_data,
         seq_lens=seq_lens,
+        seq_time_buckets=seq_time_buckets,
     )
 
 
@@ -242,14 +328,9 @@ def main() -> None:
     seq_max_lens = _parse_seq_max_lens(sml_str)
     logging.info(f"seq_max_lens: {seq_max_lens}")
 
-    # ---- Data loading: use a conservative inference batch size to avoid GPU OOM ----
-    train_batch_size = int(train_config.get('batch_size', _FALLBACK_BATCH_SIZE))
-    batch_size = min(train_batch_size, 32)
-    num_workers = min(int(train_config.get('num_workers', _FALLBACK_NUM_WORKERS)), 4)
-    logging.info(
-        f"Inference loader config: train_batch_size={train_batch_size}, "
-        f"effective_batch_size={batch_size}, num_workers={num_workers}"
-    )
+    # ---- Data loading: reuse batch_size / num_workers from training config ----
+    batch_size = int(train_config.get('batch_size', _FALLBACK_BATCH_SIZE))
+    num_workers = int(train_config.get('num_workers', _FALLBACK_NUM_WORKERS))
 
     test_dataset = PCVRParquetDataset(
         parquet_path=data_dir,
@@ -266,9 +347,21 @@ def main() -> None:
     # ---- Build model: every structural hyperparameter is resolved from train_config ----
     model_cfg = resolve_model_cfg(train_config)
 
+    # ns_groups_json also comes from training config (e.g. run.sh may have
+    # passed an empty string to disable it). When trainer.py has copied the
+    # JSON into the ckpt dir, train_config records just the basename, so try
+    # resolving against ``model_dir`` first before honoring the raw (possibly
+    # absolute) path as a fallback.
+    ns_groups_json = train_config.get('ns_groups_json', None)
+    if ns_groups_json:
+        local_candidate = os.path.join(model_dir, os.path.basename(ns_groups_json))
+        if os.path.exists(local_candidate):
+            ns_groups_json = local_candidate
+
     model = build_model(
         test_dataset,
         model_cfg=model_cfg,
+        ns_groups_json=ns_groups_json,
         device=device,
     )
 
