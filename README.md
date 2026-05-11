@@ -72,6 +72,9 @@ KDD sample data.
 | WuKong | 10 epoch | 0.515152 | 0.387896 |
 | HyFormer | block 4, 10 epoch | 0.641098 | 0.345131 | 
 | HyFormerResidualGate | block 4, 10 epoch | 0.670455 | 0.340754 |
+| HyFormer two | block 2, 10 epoch | 0.585227 | 0.375583 |
+| HyFormer two exact | block 2, 10 epoch | 0.859375 | 0.278253 |
+| hyf_tref | 10 epoch | 0.743371 | 0.328714 |
 
 # Submission Score
 
