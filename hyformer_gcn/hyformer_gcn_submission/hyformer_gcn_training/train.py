@@ -13,9 +13,12 @@ import os
 import json
 import argparse
 import logging
+import glob
 from pathlib import Path
 from typing import List, Tuple
 
+import numpy as np
+import pyarrow.parquet as pq
 import torch
 
 from utils import set_seed, EarlyStopping, create_logger
@@ -36,6 +39,55 @@ def build_feature_specs(
         vs = max(per_position_vocab_sizes[offset:offset + length])
         specs.append((vs, offset, length))
     return specs
+
+
+def _hash_ids_np(ids: np.ndarray, num_buckets: int) -> np.ndarray:
+    ids = ids.astype(np.int64, copy=False)
+    out = (np.maximum(ids, 0) % max(1, num_buckets - 1)) + 1
+    out[ids <= 0] = 0
+    return out.astype(np.int64, copy=False)
+
+
+def build_hashed_lightgcn_graph(
+    data_dir: str,
+    output_path: str,
+    num_user_buckets: int,
+    num_item_buckets: int,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Build unique hashed click edges from label_type == 2 rows."""
+    edge_chunks = []
+    for path in sorted(glob.glob(os.path.join(data_dir, '*.parquet'))):
+        pf = pq.ParquetFile(path)
+        for batch in pf.iter_batches(columns=['user_id', 'item_id', 'label_type']):
+            labels = batch.column('label_type').fill_null(0).to_numpy(
+                zero_copy_only=False).astype(np.int64)
+            mask = labels == 2
+            if not mask.any():
+                continue
+            users = batch.column('user_id').fill_null(0).to_numpy(
+                zero_copy_only=False).astype(np.int64)[mask]
+            items = batch.column('item_id').fill_null(0).to_numpy(
+                zero_copy_only=False).astype(np.int64)[mask]
+            hu = _hash_ids_np(users, num_user_buckets)
+            hi = _hash_ids_np(items, num_item_buckets)
+            valid = (hu > 0) & (hi > 0)
+            if valid.any():
+                edge_chunks.append(np.stack([hu[valid], hi[valid]], axis=1))
+
+    if edge_chunks:
+        edges = np.unique(np.concatenate(edge_chunks, axis=0), axis=0)
+        edge_users = torch.from_numpy(edges[:, 0].astype(np.int64))
+        edge_items = torch.from_numpy(edges[:, 1].astype(np.int64))
+    else:
+        edge_users = torch.empty(0, dtype=torch.long)
+        edge_items = torch.empty(0, dtype=torch.long)
+
+    torch.save({'edge_users': edge_users, 'edge_items': edge_items}, output_path)
+    logging.info(
+        f"Built LightGCN graph: {edge_users.numel()} unique click edges, "
+        f"user_buckets={num_user_buckets}, item_buckets={num_item_buckets}, "
+        f"path={output_path}")
+    return edge_users, edge_items
 
 
 def parse_args() -> argparse.Namespace:
@@ -193,6 +245,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--item_ns_tokens', type=int, default=0,
                         help='Number of item NS tokens in rankmixer mode '
                              '(0 = automatically use the number of item groups)')
+    parser.add_argument('--use_lightgcn', action='store_true', default=True,
+                        help='Enable hashed LightGCN user/item ID embeddings')
+    parser.add_argument('--no_lightgcn', dest='use_lightgcn', action='store_false',
+                        help='Disable hashed LightGCN user/item ID embeddings')
+    parser.add_argument('--gcn_user_buckets', type=int, default=65536,
+                        help='Number of hashed user ID buckets for LightGCN')
+    parser.add_argument('--gcn_item_buckets', type=int, default=65536,
+                        help='Number of hashed item ID buckets for LightGCN')
+    parser.add_argument('--gcn_num_layers', type=int, default=1,
+                        help='Number of LightGCN propagation layers')
+    parser.add_argument('--gcn_graph_path', type=str, default=None,
+                        help='Optional path for the serialized hashed LightGCN graph')
 
     args = parser.parse_args()
 
@@ -273,6 +337,18 @@ def main() -> None:
     item_int_feature_specs = build_feature_specs(
         pcvr_dataset.item_int_schema, pcvr_dataset.item_int_vocab_sizes)
 
+    gcn_edge_users = None
+    gcn_edge_items = None
+    if args.use_lightgcn:
+        gcn_graph_path = args.gcn_graph_path or os.path.join(args.ckpt_dir, 'gcn_graph.pt')
+        gcn_edge_users, gcn_edge_items = build_hashed_lightgcn_graph(
+            data_dir=args.data_dir,
+            output_path=gcn_graph_path,
+            num_user_buckets=args.gcn_user_buckets,
+            num_item_buckets=args.gcn_item_buckets,
+        )
+        args.gcn_graph_path = gcn_graph_path
+
     model_args = {
         "user_int_feature_specs": user_int_feature_specs,
         "item_int_feature_specs": item_int_feature_specs,
@@ -301,6 +377,12 @@ def main() -> None:
         "ns_tokenizer_type": args.ns_tokenizer_type,
         "user_ns_tokens": args.user_ns_tokens,
         "item_ns_tokens": args.item_ns_tokens,
+        "use_lightgcn": args.use_lightgcn,
+        "gcn_user_buckets": args.gcn_user_buckets,
+        "gcn_item_buckets": args.gcn_item_buckets,
+        "gcn_num_layers": args.gcn_num_layers,
+        "gcn_edge_users": gcn_edge_users,
+        "gcn_edge_items": gcn_edge_items,
     }
 
     model = PCVRHyFormer(**model_args).to(args.device)
@@ -350,6 +432,7 @@ def main() -> None:
         ns_groups_path=args.ns_groups_json if args.ns_groups_json and os.path.exists(args.ns_groups_json) else None,
         eval_every_n_steps=args.eval_every_n_steps,
         train_config=vars(args),
+        gcn_graph_path=args.gcn_graph_path if args.use_lightgcn else None,
     )
 
     trainer.train()

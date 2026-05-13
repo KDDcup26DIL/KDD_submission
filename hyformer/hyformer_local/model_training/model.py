@@ -221,14 +221,6 @@ class RoPEMultiheadAttention(nn.Module):
             else:
                 sdpa_attn_mask = bool_attn
 
-        fully_masked = None
-        if sdpa_attn_mask is not None:
-            fully_masked = ~sdpa_attn_mask.any(dim=-1, keepdim=True)
-            if fully_masked.any():
-                # SDPA can emit NaN gradients when a query has no valid key.
-                # Attend to a dummy first key, then zero the affected outputs.
-                sdpa_attn_mask = sdpa_attn_mask.masked_fill(fully_masked, True)
-
         # 5. Scaled Dot-Product Attention
         dropout_p = self.dropout if self.training else 0.0
         out = F.scaled_dot_product_attention(
@@ -236,8 +228,6 @@ class RoPEMultiheadAttention(nn.Module):
             attn_mask=sdpa_attn_mask,
             dropout_p=dropout_p,
         )  # (B, num_heads, Lq, head_dim)
-        if fully_masked is not None and fully_masked.any():
-            out = out.masked_fill(fully_masked, 0.0)
 
         # Replace NaN from all-padding softmax with 0 (zero vectors preserve original input via residual)
         out = torch.nan_to_num(out, nan=0.0)

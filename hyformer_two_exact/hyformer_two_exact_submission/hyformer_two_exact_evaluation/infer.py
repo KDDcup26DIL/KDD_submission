@@ -20,7 +20,14 @@ Environment variables:
 import os
 import json
 import logging
+import math
 from typing import Any, Dict, List, Optional, Tuple
+
+# Avoid oversubscribing CPU threads in each DataLoader worker on many-core
+# evaluation hosts. These must be set before importing pyarrow via dataset.py.
+os.environ.setdefault('NUMEXPR_MAX_THREADS', '1')
+os.environ.setdefault('OMP_NUM_THREADS', '1')
+os.environ.setdefault('MKL_NUM_THREADS', '1')
 
 import torch
 import torch.nn as nn
@@ -73,8 +80,10 @@ _FALLBACK_MODEL_CFG = {
 _FALLBACK_SEQ_MAX_LENS = 'seq_a:256,seq_b:256,seq_c:512,seq_d:512'
 _FALLBACK_BATCH_SIZE = 256
 _FALLBACK_NUM_WORKERS = 16
-_DEFAULT_INFER_BATCH_SIZE = 64
-_DEFAULT_INFER_NUM_WORKERS = 4
+_DEFAULT_INFER_BATCH_SIZE = 512
+_DEFAULT_INFER_MICRO_BATCH_SIZE = 256
+_DEFAULT_INFER_NUM_WORKERS = 16
+_DEFAULT_INFER_SEQ_MAX_LEN = 128
 
 
 # Hyperparameter keys used to build the model. Everything else in
@@ -105,6 +114,24 @@ def _parse_seq_max_lens(sml_str: str) -> Dict[str, int]:
     return seq_max_lens
 
 
+def _apply_infer_seq_cap(seq_max_lens: Dict[str, int]) -> Dict[str, int]:
+    """Apply inference-only sequence truncation.
+
+    This does not change model shapes or checkpoint loading. It only limits
+    how many sequence events are materialized from Parquet for inference.
+    """
+    override = os.environ.get('PCVR_INFER_SEQ_MAX_LENS', '').strip()
+    if override:
+        caps = _parse_seq_max_lens(override)
+        return {
+            domain: min(max_len, caps.get(domain, max_len))
+            for domain, max_len in seq_max_lens.items()
+        }
+
+    cap = _env_int('PCVR_INFER_SEQ_MAX_LEN', _DEFAULT_INFER_SEQ_MAX_LEN)
+    return {domain: min(max_len, cap) for domain, max_len in seq_max_lens.items()}
+
+
 def _env_int(name: str, default: int) -> int:
     value = os.environ.get(name)
     if value is None or value == '':
@@ -122,6 +149,17 @@ def _env_bool(name: str, default: bool) -> bool:
     if value is None or value == '':
         return default
     return value.lower() in {'1', 'true', 'yes', 'y', 'on'}
+
+
+def _resolve_amp_dtype() -> torch.dtype:
+    requested = os.environ.get('PCVR_INFER_AMP_DTYPE', '').strip().lower()
+    if requested in {'bf16', 'bfloat16'}:
+        return torch.bfloat16
+    if requested in {'fp16', 'float16', 'half'}:
+        return torch.float16
+    if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
+        return torch.bfloat16
+    return torch.float16
 
 
 def load_train_config(model_dir: str) -> Dict[str, Any]:
@@ -362,10 +400,12 @@ def _infer_batch_adaptive(
     device: str,
     micro_batch_size: int,
     use_amp: bool,
-) -> Tuple[List[float], int]:
+    amp_dtype: torch.dtype,
+) -> Tuple[List[float], int, int]:
     """Infer one dataset batch, halving micro-batch size on CUDA OOM."""
     batch_size = _batch_size_of(batch)
     probs_out: List[float] = []
+    invalid_count = 0
     start = 0
     cur_micro_batch_size = max(1, min(micro_batch_size, batch_size))
 
@@ -376,15 +416,29 @@ def _infer_batch_adaptive(
             model_input = _batch_to_model_input(micro_batch, device)
             with torch.autocast(
                 device_type='cuda',
-                dtype=torch.float16,
+                dtype=amp_dtype,
                 enabled=(use_amp and device.startswith('cuda')),
             ):
-                logits, embedding = model.predict(model_input)
+                logits = model(model_input)
                 logits = logits.squeeze(-1)
-                probs = torch.sigmoid(logits).detach().cpu().float().numpy()
+                invalid_count += int((~torch.isfinite(logits)).sum().item())
+                logits = torch.nan_to_num(
+                    logits.float(),
+                    nan=0.0,
+                    posinf=20.0,
+                    neginf=-20.0,
+                )
+                probs_t = torch.sigmoid(logits).clamp_(0.0, 1.0)
+                invalid_count += int((~torch.isfinite(probs_t)).sum().item())
+                probs = torch.nan_to_num(
+                    probs_t,
+                    nan=0.5,
+                    posinf=1.0,
+                    neginf=0.0,
+                ).clamp_(0.0, 1.0).detach().cpu().numpy()
             probs_out.extend(probs.tolist())
             start = end
-            del model_input, logits, embedding, probs, micro_batch
+            del model_input, logits, probs_t, probs, micro_batch
         except RuntimeError as exc:
             if not _is_cuda_oom(exc) or cur_micro_batch_size == 1:
                 raise
@@ -395,7 +449,7 @@ def _infer_batch_adaptive(
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 
-    return probs_out, cur_micro_batch_size
+    return probs_out, cur_micro_batch_size, invalid_count
 
 
 def main() -> None:
@@ -407,6 +461,11 @@ def main() -> None:
     os.makedirs(result_dir, exist_ok=True)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    if torch.cuda.is_available():
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+    if hasattr(torch, 'set_float32_matmul_precision'):
+        torch.set_float32_matmul_precision('high')
 
     # ---- Schema: prefer the one from model_dir (to exactly match training);
     #      fall back to the one in data_dir if missing. ----
@@ -421,25 +480,32 @@ def main() -> None:
     # ---- Parse seq_max_lens ----
     sml_str = train_config.get('seq_max_lens', _FALLBACK_SEQ_MAX_LENS)
     seq_max_lens = _parse_seq_max_lens(sml_str)
-    logging.info(f"seq_max_lens: {seq_max_lens}")
+    train_seq_max_lens = dict(seq_max_lens)
+    seq_max_lens = _apply_infer_seq_cap(seq_max_lens)
+    logging.info(
+        f"seq_max_lens: train={train_seq_max_lens}, infer={seq_max_lens}")
 
-    # ---- Data loading: use conservative inference defaults to avoid OOM ----
+    # ---- Data loading: keep CPU/Parquet batches large, cap GPU micro-batches ----
     train_batch_size = int(train_config.get('batch_size', _FALLBACK_BATCH_SIZE))
     train_num_workers = int(train_config.get('num_workers', _FALLBACK_NUM_WORKERS))
     batch_size = _env_int(
         'PCVR_INFER_BATCH_SIZE',
-        min(train_batch_size, _DEFAULT_INFER_BATCH_SIZE),
+        max(train_batch_size, _DEFAULT_INFER_BATCH_SIZE),
     )
-    micro_batch_size = _env_int('PCVR_INFER_MICRO_BATCH_SIZE', batch_size)
+    micro_batch_size = _env_int(
+        'PCVR_INFER_MICRO_BATCH_SIZE',
+        min(batch_size, _DEFAULT_INFER_MICRO_BATCH_SIZE),
+    )
     num_workers = _env_int(
         'PCVR_INFER_NUM_WORKERS',
-        min(train_num_workers, _DEFAULT_INFER_NUM_WORKERS),
+        max(train_num_workers, _DEFAULT_INFER_NUM_WORKERS),
     )
     use_amp = _env_bool('PCVR_INFER_AMP', torch.cuda.is_available())
+    amp_dtype = _resolve_amp_dtype()
     logging.info(
         f"Inference memory settings: batch_size={batch_size}, "
         f"micro_batch_size={micro_batch_size}, num_workers={num_workers}, "
-        f"amp={use_amp}")
+        f"amp={use_amp}, amp_dtype={amp_dtype}")
 
     test_dataset = PCVRParquetDataset(
         parquet_path=data_dir,
@@ -494,31 +560,57 @@ def main() -> None:
         test_dataset,
         batch_size=None,
         num_workers=num_workers,
-        prefetch_factor=2 if num_workers > 0 else None,
+        prefetch_factor=4 if num_workers > 0 else None,
+        persistent_workers=num_workers > 0,
         pin_memory=torch.cuda.is_available(),
     )
 
     all_probs = []
     all_user_ids = []
+    total_invalid = 0
     logging.info("Starting inference...")
 
     with torch.inference_mode():
         for batch_idx, batch in enumerate(test_loader):
             user_ids = batch.get('user_id', [])
-            probs, micro_batch_size = _infer_batch_adaptive(
+            probs, micro_batch_size, invalid_count = _infer_batch_adaptive(
                 model=model,
                 batch=batch,
                 device=device,
                 micro_batch_size=micro_batch_size,
                 use_amp=use_amp,
+                amp_dtype=amp_dtype,
             )
             all_probs.extend(probs)
             all_user_ids.extend(user_ids)
+            total_invalid += invalid_count
 
             if (batch_idx + 1) % 100 == 0:
                 logging.info(f"  Processed {len(all_probs)} samples")
 
     logging.info(f"Inference complete: {len(all_probs)} predictions")
+    if total_invalid > 0:
+        logging.warning(
+            f"Replaced {total_invalid} non-finite logits/probs during inference")
+
+    final_invalid = 0
+    sanitized_probs: List[float] = []
+    for p in all_probs:
+        pf = float(p)
+        if not math.isfinite(pf):
+            pf = 0.5
+            final_invalid += 1
+        elif pf < 0.0:
+            pf = 0.0
+            final_invalid += 1
+        elif pf > 1.0:
+            pf = 1.0
+            final_invalid += 1
+        sanitized_probs.append(pf)
+    all_probs = sanitized_probs
+    if final_invalid > 0:
+        logging.warning(
+            f"Sanitized {final_invalid} final probabilities before JSON dump")
 
     predictions = {
         "predictions": dict(zip(all_user_ids, all_probs)),

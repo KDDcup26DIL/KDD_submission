@@ -13,6 +13,8 @@ class ModelInput(NamedTuple):
     item_int_feats: torch.Tensor
     user_dense_feats: torch.Tensor
     item_dense_feats: torch.Tensor
+    user_ids: torch.Tensor
+    item_ids: torch.Tensor
     seq_data: dict        # {domain: tensor [B, S, L]}
     seq_lens: dict        # {domain: tensor [B]}
     seq_time_buckets: dict  # {domain: tensor [B, L]}
@@ -427,14 +429,16 @@ class MultiSeqQueryGenerator(nn.Module):
         num_ns: int,
         num_queries: int,
         num_sequences: int,
-        hidden_mult: int = 4
+        hidden_mult: int = 4,
+        use_lightgcn: bool = False,
     ) -> None:
         super().__init__()
         self.num_queries = num_queries
         self.num_sequences = num_sequences
         self.d_model = d_model
 
-        global_info_dim = (num_ns + 1) * d_model
+        self.use_lightgcn = use_lightgcn
+        global_info_dim = (num_ns + (3 if use_lightgcn else 1)) * d_model
 
         # LayerNorm on global_info to prevent gradient explosion from large-dim concat
         self.global_info_norm = nn.LayerNorm(global_info_dim)
@@ -457,7 +461,9 @@ class MultiSeqQueryGenerator(nn.Module):
         self,
         ns_tokens: torch.Tensor,
         seq_tokens_list: list,
-        seq_padding_masks: list
+        seq_padding_masks: list,
+        user_gcn_emb: Optional[torch.Tensor] = None,
+        item_gcn_emb: Optional[torch.Tensor] = None,
     ) -> list:
         """Generates query tokens for each sequence.
 
@@ -482,8 +488,14 @@ class MultiSeqQueryGenerator(nn.Module):
             seq_count = valid_mask_expanded.sum(dim=1).clamp(min=1)  # (B, 1)
             seq_pooled = seq_sum / seq_count  # (B, D)
 
-            # GlobalInfo_i = Concat(NS_flat, seq_pooled_i)
-            global_info = torch.cat([ns_flat, seq_pooled], dim=-1)  # (B, (M+1)*D)
+            # GlobalInfo_i = Concat(optional LightGCN IDs, NS_flat, seq_pooled_i)
+            if self.use_lightgcn:
+                if user_gcn_emb is None or item_gcn_emb is None:
+                    raise ValueError("LightGCN query generator requires user/item embeddings")
+                global_info = torch.cat(
+                    [user_gcn_emb, item_gcn_emb, ns_flat, seq_pooled], dim=-1)
+            else:
+                global_info = torch.cat([ns_flat, seq_pooled], dim=-1)  # (B, (M+1)*D)
             global_info = self.global_info_norm(global_info)
 
             # Generate N query tokens
@@ -492,6 +504,90 @@ class MultiSeqQueryGenerator(nn.Module):
             q_tokens_list.append(q_tokens)
 
         return q_tokens_list
+
+
+class HashedLightGCN(nn.Module):
+    """LightGCN over hashed user/item ID buckets.
+
+    Positive click edges are pre-built from training rows with label_type == 2.
+    Raw ids are mapped deterministically to [1, num_buckets); bucket 0 is kept
+    as a fallback for missing ids.
+    """
+
+    def __init__(
+        self,
+        num_user_buckets: int,
+        num_item_buckets: int,
+        d_model: int,
+        edge_users: Optional[torch.Tensor] = None,
+        edge_items: Optional[torch.Tensor] = None,
+        num_layers: int = 1,
+    ) -> None:
+        super().__init__()
+        self.num_user_buckets = int(num_user_buckets)
+        self.num_item_buckets = int(num_item_buckets)
+        self.num_layers = int(num_layers)
+        self.user_embedding = nn.Embedding(self.num_user_buckets, d_model, padding_idx=0)
+        self.item_embedding = nn.Embedding(self.num_item_buckets, d_model, padding_idx=0)
+
+        if edge_users is None:
+            edge_users = torch.empty(0, dtype=torch.long)
+        if edge_items is None:
+            edge_items = torch.empty(0, dtype=torch.long)
+        edge_users = edge_users.long().clamp(0, self.num_user_buckets - 1)
+        edge_items = edge_items.long().clamp(0, self.num_item_buckets - 1)
+        self.register_buffer('edge_users', edge_users, persistent=True)
+        self.register_buffer('edge_items', edge_items, persistent=True)
+
+        user_deg = torch.zeros(self.num_user_buckets, dtype=torch.float32)
+        item_deg = torch.zeros(self.num_item_buckets, dtype=torch.float32)
+        if edge_users.numel() > 0:
+            user_deg.index_add_(0, edge_users.cpu(), torch.ones_like(edge_users, dtype=torch.float32).cpu())
+            item_deg.index_add_(0, edge_items.cpu(), torch.ones_like(edge_items, dtype=torch.float32).cpu())
+        self.register_buffer('user_deg_inv_sqrt', user_deg.clamp(min=1.0).pow(-0.5), persistent=True)
+        self.register_buffer('item_deg_inv_sqrt', item_deg.clamp(min=1.0).pow(-0.5), persistent=True)
+
+        nn.init.normal_(self.user_embedding.weight, std=0.02)
+        nn.init.normal_(self.item_embedding.weight, std=0.02)
+        with torch.no_grad():
+            self.user_embedding.weight[0].zero_()
+            self.item_embedding.weight[0].zero_()
+
+    @staticmethod
+    def hash_ids(ids: torch.Tensor, num_buckets: int) -> torch.Tensor:
+        ids = ids.long()
+        valid = ids > 0
+        hashed = torch.remainder(ids.clamp_min(0), max(1, num_buckets - 1)) + 1
+        return torch.where(valid, hashed, torch.zeros_like(hashed)).clamp(0, num_buckets - 1)
+
+    def propagate(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        user = self.user_embedding.weight
+        item = self.item_embedding.weight
+        if self.edge_users.numel() == 0 or self.num_layers <= 0:
+            return user, item
+
+        users = [user]
+        items = [item]
+        edge_u = self.edge_users
+        edge_i = self.edge_items
+        norm = self.user_deg_inv_sqrt[edge_u] * self.item_deg_inv_sqrt[edge_i]
+
+        for _ in range(self.num_layers):
+            next_user = torch.zeros_like(user)
+            next_item = torch.zeros_like(item)
+            next_item.index_add_(0, edge_i, user[edge_u] * norm.unsqueeze(-1))
+            next_user.index_add_(0, edge_u, item[edge_i] * norm.unsqueeze(-1))
+            user, item = next_user, next_item
+            users.append(user)
+            items.append(item)
+
+        return torch.stack(users, dim=0).mean(dim=0), torch.stack(items, dim=0).mean(dim=0)
+
+    def forward(self, raw_user_ids: torch.Tensor, raw_item_ids: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        all_user, all_item = self.propagate()
+        user_idx = self.hash_ids(raw_user_ids, self.num_user_buckets).to(all_user.device)
+        item_idx = self.hash_ids(raw_item_ids, self.num_item_buckets).to(all_item.device)
+        return all_user[user_idx], all_item[item_idx]
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1229,6 +1325,12 @@ class PCVRHyFormer(nn.Module):
         ns_tokenizer_type: str = 'rankmixer',
         user_ns_tokens: int = 0,
         item_ns_tokens: int = 0,
+        use_lightgcn: bool = False,
+        gcn_user_buckets: int = 65536,
+        gcn_item_buckets: int = 65536,
+        gcn_num_layers: int = 1,
+        gcn_edge_users: Optional[torch.Tensor] = None,
+        gcn_edge_items: Optional[torch.Tensor] = None,
     ) -> None:
         super().__init__()
 
@@ -1244,6 +1346,7 @@ class PCVRHyFormer(nn.Module):
         self.emb_skip_threshold = emb_skip_threshold
         self.seq_id_threshold = seq_id_threshold
         self.ns_tokenizer_type = ns_tokenizer_type
+        self.use_lightgcn = use_lightgcn
 
         # ================== NS Tokens Construction ==================
 
@@ -1315,6 +1418,16 @@ class PCVRHyFormer(nn.Module):
         self.num_ns = (num_user_ns + (1 if self.has_user_dense else 0)
                        + num_item_ns + (1 if self.has_item_dense else 0))
 
+        if self.use_lightgcn:
+            self.lightgcn = HashedLightGCN(
+                num_user_buckets=gcn_user_buckets,
+                num_item_buckets=gcn_item_buckets,
+                d_model=d_model,
+                edge_users=gcn_edge_users,
+                edge_items=gcn_edge_items,
+                num_layers=gcn_num_layers,
+            )
+
         # ================== Check d_model % T == 0 constraint (full mode only) ==================
         T = num_queries * self.num_sequences + self.num_ns
         if rank_mixer_mode == 'full' and d_model % T != 0:
@@ -1385,6 +1498,7 @@ class PCVRHyFormer(nn.Module):
             num_queries=num_queries,
             num_sequences=self.num_sequences,
             hidden_mult=hidden_mult,
+            use_lightgcn=self.use_lightgcn,
         )
 
         # MultiSeqHyFormerBlock stack
@@ -1661,8 +1775,13 @@ class PCVRHyFormer(nn.Module):
             mask = self._make_padding_mask(inputs.seq_lens[domain], inputs.seq_data[domain].shape[2])
             seq_masks_list.append(mask)
 
+        user_gcn_emb = item_gcn_emb = None
+        if self.use_lightgcn:
+            user_gcn_emb, item_gcn_emb = self.lightgcn(inputs.user_ids, inputs.item_ids)
+
         # 3. Generate independent Q tokens per sequence via MultiSeqQueryGenerator
-        q_tokens_list = self.query_generator(ns_tokens, seq_tokens_list, seq_masks_list)
+        q_tokens_list = self.query_generator(
+            ns_tokens, seq_tokens_list, seq_masks_list, user_gcn_emb, item_gcn_emb)
 
         # 4. Dropout + MultiSeqHyFormerBlock stack + output projection
         output = self._run_multi_seq_blocks(
@@ -1703,7 +1822,12 @@ class PCVRHyFormer(nn.Module):
             mask = self._make_padding_mask(inputs.seq_lens[domain], inputs.seq_data[domain].shape[2])
             seq_masks_list.append(mask)
 
-        q_tokens_list = self.query_generator(ns_tokens, seq_tokens_list, seq_masks_list)
+        user_gcn_emb = item_gcn_emb = None
+        if self.use_lightgcn:
+            user_gcn_emb, item_gcn_emb = self.lightgcn(inputs.user_ids, inputs.item_ids)
+
+        q_tokens_list = self.query_generator(
+            ns_tokens, seq_tokens_list, seq_masks_list, user_gcn_emb, item_gcn_emb)
 
         output = self._run_multi_seq_blocks(
             q_tokens_list, ns_tokens, seq_tokens_list, seq_masks_list,
