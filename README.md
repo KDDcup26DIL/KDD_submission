@@ -85,6 +85,15 @@ KDD sample data.
 | HyFormer | 1 epoch [01:03:51] | 0.797713 | - | 
 | EulerNet(1 layer) | 1 epoch [01:04:52] | 0.714584 | - |
 | SCV | 1 epoch [02:11:46] | 0.72308 | - | 
+| HyFormer | 10 epoch | 0.813109 | - | 
+| HyFormer WuKong two tower | 10 epoch | 0.800326 | - |
+| HyFormer wo meanpool(seq) | 10 epoch | 0.804653 | - |
+| HyFormer tref | 10 epoch | 0.817137 | - |
+| HyFormer tref+NS | 10 epoch | 0.810007 | - |
+| HyFormer LightGCN | 10 epoch | 0.627606 | - |
+| HyFormer LightGCN v2 | 10 epoch | 0.7962 | - |
+| HyFormer tref CNN | 10 epoch | 0.809216 | - |
+
 
 
 
