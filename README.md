@@ -93,7 +93,45 @@ KDD sample data.
 | HyFormer LightGCN | 10 epoch | 0.627606 | - |
 | HyFormer LightGCN v2 | 10 epoch | 0.7962 | - |
 | HyFormer tref CNN | 10 epoch | 0.809216 | - |
+| Hyformer tref-lite | 10 epoch | 0.812782 | - |
 
+## HyFormer Ablation
+
+![HyFormer ablation AUC](./checkpoint/hyformer_ablation_hun_gpu6_260515_150309/ablation_results/ablation_auc.svg)
+
+Run: `hyformer_ablation_hun_gpu6_260515_150309`, 10 epochs on `toss`.
+
+| variant | best AUC | best LogLoss | description |
+| --- | ---: | ---: | --- |
+| `query_seq_only` | 0.618288 | 0.096820 | Query global context uses only `MeanPool(Seq_i)`. |
+| `rank_none` | 0.614427 | 0.096313 | Removes RankMixer token mixing. |
+| `no_time` | 0.613943 | 0.096351 | Removes time-bucket embedding. |
+| `num_queries_1` | 0.613752 | 0.096543 | Uses one query per sequence instead of two. |
+| `baseline` | 0.612267 | 0.096431 | Default HyFormer ablation baseline. |
+| `seq_longer` | 0.610896 | 0.096613 | Uses longer/top-k sequence encoder. |
+| `rank_ffn_only` | 0.610277 | 0.096411 | Keeps per-token FFN but removes RankMixer token mixing. |
+| `seq_swiglu` | 0.609848 | 0.096918 | Replaces sequence self-attention with SwiGLU encoder. |
+| `query_ns_only` | 0.608567 | 0.096468 | Query global context uses only user/item NS summary. |
+| `rope` | 0.608465 | 0.096520 | Adds RoPE positional encoding. |
+| `query_zero_seq` | 0.604653 | 0.096487 | Keeps NS summary but zeros the sequence summary in query context. |
+| `no_sparse_reinit` | 0.585525 | 0.097284 | Disables sparse embedding re-initialization. |
+
+구성요소별 의미:
+
+- `query_context`: sequence별 query token을 만들 때 쓰는 global summary. Baseline은 `[NS summary ; MeanPool(Seq_i)]`이고, ablation에서는 `seq_only`, `ns_only`, `ns_zero_seq`를 비교했다.
+- `RankMixer`: user/item sparse feature embedding을 여러 NS token으로 나눈 뒤 token mixing을 수행하는 부분. `rank_none`, `rank_ffn_only`는 이 mixing의 필요성을 확인한다.
+- `time bucket`: 현재 row timestamp와 sequence timestamp 차이를 bucket embedding으로 넣는 부분. `no_time`은 이 temporal signal을 제거한다.
+- `sequence encoder`: sequence token을 처리하는 encoder. `transformer`, `longer`, `swiglu`를 비교했다.
+- `num_queries`: 각 sequence domain당 생성하는 query token 개수. `num_queries_1`은 query capacity를 줄인 설정이다.
+- `sparse reinit`: high-cardinality sparse embedding의 과적합을 줄이기 위한 epoch-end reinitialization. `no_sparse_reinit`은 이 regularization을 제거한다.
+
+분석:
+
+- 가장 좋은 결과는 `query_seq_only`로, baseline `0.612267` 대비 `+0.006022` AUC를 보였다. 이 run에서는 user/item NS summary를 query 생성에 직접 넣는 것보다, 각 domain sequence의 단순 mean summary가 query conditioning에 더 잘 맞았다.
+- `query_ns_only`와 `query_zero_seq`가 baseline보다 낮은 점을 보면, sequence summary는 query 생성에 필수적이다. 반대로 NS summary는 query 생성 단계에서는 오히려 noise가 될 수 있고, NS token은 이후 HyFormer block 내부에서 처리하는 정도가 더 안정적일 가능성이 있다.
+- `no_sparse_reinit`의 성능 하락이 가장 크다. Sparse embedding reinitialization은 이 데이터에서 regularization 효과가 분명하며, high-cardinality feature overfitting을 억제하는 핵심 장치로 보인다.
+- `rope`, `seq_swiglu`, `seq_longer`는 baseline을 넘지 못했다. 현재 설정에서는 positional/longer attention 강화보다 단순 sequence summary와 기존 transformer encoder가 더 안정적이다.
+- `rank_none`과 `no_time`은 baseline보다 약간 높게 나왔지만 차이가 작다. 단일 local split 기준이므로 submission 성능까지 확인하기 전에는 구조적 우위로 단정하기 어렵다.
 
 
 
