@@ -27,6 +27,9 @@
 | hyformer unimixer token | 10 epoch | 0.600537 | 0.100137 |
 | hyformer unimixer block | 10 epoch | 0.593689 | 0.100272 | 
 | hyformer unimixer | 10 epoch | 0.602282 | 0.100493 |
+| hyformer unimixer RankUp split | 10 epoch | 0.603180 | 0.100466 | 
+| hyformer unimixer nlir (TokenFormer) | 10 epoch | 0.603881 | 0.099851 |
+| hyformer unimixer auxloss | 10 epoch | | |
 
 ## Frappe (84,373 row, 6.8 MB)
 | model | settings | AUC | LogLoss |
@@ -260,3 +263,15 @@ parser.add_argument(
 
 ## 7.2 run.sh 수정
 제출 page에서 run.sh 파라미터 수정
+
+
+## note
+```
+1. hyf_unimix_rankup_split
+2. hyf_unimix_nlir
+3. hyf_unimix_auxloss
+4. hyf_unimix_global_token
+5. 1~4 중 best 조합
+6. hyf_unimix_block_schedule
+7. hyf_unimix_cross_dense
+```
