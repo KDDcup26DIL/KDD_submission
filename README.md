@@ -19,6 +19,14 @@
 | SCV(b64) | toss tiny 10 epoch | 0.636060 | 0.107081 |
 | hySCV | toss tiny 10 epoch | 0.651397 | 0.100834 |
 | FinalMLP | toss tiny 10 epoch | 0.597006 | 0.101975 |
+| hyformer wukong simple fusion | 10 epoch | 0.664605 | 0.098509 |
+| hyformer wukong bilinear fusion | 10 epoch | 0.658183 | 0.098024 |
+| hyformer wukong DCNv2 bilinear fusion | 10 epoch | 0.661140 | 0.097766 |  
+| hyformer DCNv2 bilinear fusion | 10 epoch | 0.623333 | 0.099730 |
+| hyformer DCNv2 simple fusion | 10 epoch | 0.631147 | 0.098718 | 
+| hyformer unimixer token | 10 epoch | 0.600537 | 0.100137 |
+| hyformer unimixer block | 10 epoch | 0.593689 | 0.100272 | 
+| hyformer unimixer | 10 epoch | 0.602282 | 0.100493 |
 
 ## Frappe (84,373 row, 6.8 MB)
 | model | settings | AUC | LogLoss |
@@ -86,14 +94,18 @@ KDD sample data.
 | EulerNet(1 layer) | 1 epoch [01:04:52] | 0.714584 | - |
 | SCV | 1 epoch [02:11:46] | 0.72308 | - | 
 | HyFormer | 10 epoch | 0.813109 | - | 
-| HyFormer WuKong two tower | 10 epoch | 0.800326 | - |
+| HyFormer WuKong simple fusion | 10 epoch | 0.800326 | - |
 | HyFormer wo meanpool(seq) | 10 epoch | 0.804653 | - |
 | HyFormer tref | 10 epoch | 0.817137 | - |
 | HyFormer tref+NS | 10 epoch | 0.810007 | - |
 | HyFormer LightGCN | 10 epoch | 0.627606 | - |
 | HyFormer LightGCN v2 | 10 epoch | 0.7962 | - |
 | HyFormer tref CNN | 10 epoch | 0.809216 | - |
-| Hyformer tref-lite | 10 epoch | 0.812782 | - |
+| HyFormer tref-lite | 10 epoch | 0.812782 | - |
+| HyFormer u init | 10 epoch | 0.619317 | - |
+| HyFormer seq init | 10 epoch | 0.809185 | - |
+| HyFormer WuKong bilinear fusion | 10 epoch | 0.799282 | - |
+| HyFormer WuKong DCNv2 bilinear fusion | 10 epoch | 0.79889 | - | 
 
 ## HyFormer Ablation
 
