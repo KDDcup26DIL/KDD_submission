@@ -29,7 +29,7 @@
 | hyformer unimixer | 10 epoch | 0.602282 | 0.100493 |
 | hyformer unimixer RankUp split | 10 epoch | 0.603180 | 0.100466 | 
 | hyformer unimixer nlir (TokenFormer) | 10 epoch | 0.603881 | 0.099851 |
-| hyformer unimixer auxloss | 10 epoch | | |
+| hyformer unimixer auxloss | 10 epoch | 0.605133 | 0.100142 |
 
 ## Frappe (84,373 row, 6.8 MB)
 | model | settings | AUC | LogLoss |
@@ -109,6 +109,11 @@ KDD sample data.
 | HyFormer seq init | 10 epoch | 0.809185 | - |
 | HyFormer WuKong bilinear fusion | 10 epoch | 0.799282 | - |
 | HyFormer WuKong DCNv2 bilinear fusion | 10 epoch | 0.79889 | - | 
+| HyFormer UniMixer | 0.817867 | - |
+| HyFormer UniMixer token only | 0.817618 | - |
+| HyFormer UniMixer auxloss | 0.812109 | - | 
+| HyFormer UniMixer nlir | 0.812992 | - |
+
 
 ## HyFormer Ablation
 
@@ -274,4 +279,44 @@ parser.add_argument(
 5. 1~4 중 best 조합
 6. hyf_unimix_block_schedule
 7. hyf_unimix_cross_dense
+
+8. reinit schedule sweep
+try:
+  reinit after epoch 3
+  threshold 10000
+  threshold 100000 (do)
+  no reinit for item features
+
+SWA (seed weighted averaging)
+주의사항:
+embedding reinit과 충돌 가능
+
+지금 학습은 epoch마다 high-cardinality embedding을 reinit합니다.
+이 상태에서 sparse embedding까지 평균하면 무작위 초기화된 embedding들을 섞는 꼴이 될 수 있습니다.
+따라서 처음에는 dense parameter만 SWA하고, embedding은 best checkpoint 것을 유지하는 게 안전합니다.
+서로 다른 seed 평균은 SWA가 아님
+
+seed가 다른 모델 weight는 permutation/embedding alignment가 다를 수 있어 weight averaging이 위험합니다.
+서로 다른 seed는 prediction ensemble은 가능하지만, weight averaging은 거의 권장하지 않습니다.
+같은 architecture/checkpoint만 평균
+
+hyf_unimix, hyf_unimix_token, tref를 weight average하면 안 됩니다.
+같은 모델, 같은 shape, 같은 run의 후반 checkpoint만 대상으로 해야 합니다.
+BatchNorm은 없지만 LayerNorm은 있음
+
+BatchNorm running stat 재계산 문제는 작습니다.
+그래도 평균 후 eval을 꼭 다시 해야 합니다.
+AUC 개선 보장 없음
+
+SWA는 calibration/generalization 개선 가능성이 있지만, CTR AUC에서 항상 오르진 않습니다.
+비용이 작기 때문에 시도 가치가 있는 쪽입니다.
+
+9. hyf_unimix_dense_swa
+
+만약 dense-only SWA가 좋아지면 그 다음에만:
+
+10. partial embedding SWA
+   - low-cardinality embedding만 평균
+   - high-cardinality embedding은 best checkpoint 유지
 ```
+
