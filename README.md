@@ -113,7 +113,10 @@ KDD sample data.
 | HyFormer UniMixer token only | 0.817618 | - |
 | HyFormer UniMixer auxloss | 0.812109 | - | 
 | HyFormer UniMixer nlir | 0.812992 | - |
-
+| HyFormer UniMixer RankUp split | 0.815673 | - |
+| HyFormer UniMixer match token | 0.806234 | - |
+| HyFormer UniMixer SWA | | - |
+| HyFormer UniMixer Reinit | | - | 
 
 ## HyFormer Ablation
 
