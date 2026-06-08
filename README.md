@@ -109,14 +109,14 @@ KDD sample data.
 | HyFormer seq init | 10 epoch | 0.809185 | - |
 | HyFormer WuKong bilinear fusion | 10 epoch | 0.799282 | - |
 | HyFormer WuKong DCNv2 bilinear fusion | 10 epoch | 0.79889 | - | 
-| HyFormer UniMixer | 0.817867 | - |
-| HyFormer UniMixer token only | 0.817618 | - |
-| HyFormer UniMixer auxloss | 0.812109 | - | 
-| HyFormer UniMixer nlir | 0.812992 | - |
-| HyFormer UniMixer RankUp split | 0.815673 | - |
-| HyFormer UniMixer match token | 0.806234 | - |
-| HyFormer UniMixer SWA | | - |
-| HyFormer UniMixer Reinit | | - | 
+| HyFormer UniMixer | 10 epoch | 0.817867 | - |
+| HyFormer UniMixer token only | 10 epoch | 0.817618 | - |
+| HyFormer UniMixer auxloss | 10 epoch | 0.812109 | - | 
+| HyFormer UniMixer nlir | 10 epoch | 0.812992 | - |
+| HyFormer UniMixer RankUp split | 10 epoch | 0.815673 | - |
+| HyFormer UniMixer match token | 10 epoch | 0.806234 | - |
+| HyFormer UniMixer SWA | 0.74847 | 10 epoch | - |
+| HyFormer UniMixer Reinit | 10 epoch | | - | 
 
 ## HyFormer Ablation
 
