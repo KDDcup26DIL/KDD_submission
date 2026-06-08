@@ -120,7 +120,7 @@ KDD sample data.
 
 ## HyFormer Ablation
 
-![HyFormer ablation AUC](./checkpoint/hyformer_ablation_hun_gpu6_260515_150309/ablation_results/ablation_auc.svg)
+![HyFormer ablation AUC](./ablation_auc.svg)
 
 Run: `hyformer_ablation_hun_gpu6_260515_150309`, 10 epochs on `toss`.
 

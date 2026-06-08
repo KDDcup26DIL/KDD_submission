@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="549" viewBox="0 0 1100 549">
+<rect width="100%" height="100%" fill="white"/>
+<text x="24" y="30" font-family="Arial" font-size="22" font-weight="700">HyFormer Ablation Validation AUC</text>
+<text x="24" y="70" font-family="Arial" font-size="14">query_seq_only</text>
+<rect x="260" y="50" width="680.44" height="28" rx="3" fill="#2f6fbd"/>
+<text x="948.44" y="70" font-family="Arial" font-size="14">0.618288</text>
+<text x="24" y="107" font-family="Arial" font-size="14">rank_none</text>
+<rect x="260" y="87" width="619.00" height="28" rx="3" fill="#6b9fd8"/>
+<text x="887.00" y="107" font-family="Arial" font-size="14">0.614427</text>
+<text x="24" y="144" font-family="Arial" font-size="14">no_time</text>
+<rect x="260" y="124" width="611.30" height="28" rx="3" fill="#6b9fd8"/>
+<text x="879.30" y="144" font-family="Arial" font-size="14">0.613943</text>
+<text x="24" y="181" font-family="Arial" font-size="14">num_queries_1</text>
+<rect x="260" y="161" width="608.26" height="28" rx="3" fill="#6b9fd8"/>
+<text x="876.26" y="181" font-family="Arial" font-size="14">0.613752</text>
+<text x="24" y="218" font-family="Arial" font-size="14">baseline</text>
+<rect x="260" y="198" width="584.62" height="28" rx="3" fill="#6b9fd8"/>
+<text x="852.62" y="218" font-family="Arial" font-size="14">0.612267</text>
+<text x="24" y="255" font-family="Arial" font-size="14">seq_longer</text>
+<rect x="260" y="235" width="562.82" height="28" rx="3" fill="#6b9fd8"/>
+<text x="830.82" y="255" font-family="Arial" font-size="14">0.610896</text>
+<text x="24" y="292" font-family="Arial" font-size="14">rank_ffn_only</text>
+<rect x="260" y="272" width="552.97" height="28" rx="3" fill="#6b9fd8"/>
+<text x="820.97" y="292" font-family="Arial" font-size="14">0.610277</text>
+<text x="24" y="329" font-family="Arial" font-size="14">seq_swiglu</text>
+<rect x="260" y="309" width="546.15" height="28" rx="3" fill="#6b9fd8"/>
+<text x="814.15" y="329" font-family="Arial" font-size="14">0.609848</text>
+<text x="24" y="366" font-family="Arial" font-size="14">query_ns_only</text>
+<rect x="260" y="346" width="525.76" height="28" rx="3" fill="#6b9fd8"/>
+<text x="793.76" y="366" font-family="Arial" font-size="14">0.608567</text>
+<text x="24" y="403" font-family="Arial" font-size="14">rope</text>
+<rect x="260" y="383" width="524.14" height="28" rx="3" fill="#6b9fd8"/>
+<text x="792.14" y="403" font-family="Arial" font-size="14">0.608465</text>
+<text x="24" y="440" font-family="Arial" font-size="14">query_zero_seq</text>
+<rect x="260" y="420" width="463.47" height="28" rx="3" fill="#6b9fd8"/>
+<text x="731.47" y="440" font-family="Arial" font-size="14">0.604653</text>
+<text x="24" y="477" font-family="Arial" font-size="14">no_sparse_reinit</text>
+<rect x="260" y="457" width="159.12" height="28" rx="3" fill="#6b9fd8"/>
+<text x="427.12" y="477" font-family="Arial" font-size="14">0.585525</text>
+<text x="260" y="529" font-family="Arial" font-size="12" fill="#555">axis floor=0.5755, ceil=0.6233</text>
+</svg>
