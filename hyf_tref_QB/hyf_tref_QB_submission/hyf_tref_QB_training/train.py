@@ -19,7 +19,12 @@ from typing import List, Tuple
 import torch
 
 from utils import set_seed, EarlyStopping, create_logger
-from dataset import FeatureSchema, get_pcvr_data, NUM_TIME_BUCKETS
+from dataset import (
+    FeatureSchema,
+    get_pcvr_data,
+    build_quantile_bin_stats,
+    NUM_TIME_BUCKETS,
+)
 from model import PCVRHyFormer
 from trainer import PCVRHyFormerRankingTrainer
 
@@ -198,6 +203,35 @@ def parse_args() -> argparse.Namespace:
                         help='How to summarize user/item NS tokens before query '
                              'generation: mean = average pooling, attention = '
                              'learned attention pooling')
+    parser.add_argument('--use_graph_tower', action='store_true', default=True,
+                        help='Enable batch-local LightGCN tower and BPR auxiliary loss')
+    parser.add_argument('--no_graph_tower', dest='use_graph_tower', action='store_false',
+                        help='Disable graph tower and use plain HyFormer logits')
+    parser.add_argument('--graph_user_buckets', type=int, default=262144,
+                        help='Hash bucket count for graph user ID embeddings')
+    parser.add_argument('--graph_item_buckets', type=int, default=262144,
+                        help='Hash bucket count for graph item ID embeddings')
+    parser.add_argument('--graph_layers', type=int, default=1,
+                        help='Number of batch-local LightGCN propagation layers')
+    parser.add_argument('--graph_negatives', type=int, default=10,
+                        help='Number of in-batch negative items sampled per positive row for BPR')
+    parser.add_argument('--graph_alpha', type=float, default=0.0,
+                        help='Kept for config compatibility; aux graph mode does not fuse graph score into logits')
+    parser.add_argument('--bpr_weight', type=float, default=0.1,
+                        help='Weight for BPR auxiliary loss')
+    parser.add_argument('--use_quantile_bins', action='store_true', default=True,
+                        help='Enable scalar user/item int quantile bucket embeddings')
+    parser.add_argument('--no_quantile_bins', dest='use_quantile_bins',
+                        action='store_false',
+                        help='Disable quantile bucket embeddings')
+    parser.add_argument('--qbin_num_bins', type=int, default=16,
+                        help='Number of quantile buckets per scalar int feature')
+    parser.add_argument('--qbin_sample_size', type=int, default=200000,
+                        help='Maximum sampled values per scalar feature for qbin stats')
+    parser.add_argument('--qbin_stats_json', type=str, default=None,
+                        help='Optional precomputed qbin stats JSON path. If omitted, '
+                             'stats are estimated from the training split and saved '
+                             'under ckpt_dir/qb_stats.json')
 
     args = parser.parse_args()
 
@@ -243,6 +277,33 @@ def main() -> None:
             seq_max_lens[k.strip()] = int(v.strip())
         logging.info(f"Seq max_lens override: {seq_max_lens}")
 
+    qbin_stats = None
+    qbin_stats_path = None
+    if args.use_quantile_bins and args.qbin_num_bins > 0:
+        if args.qbin_stats_json and os.path.exists(args.qbin_stats_json):
+            qbin_stats_path = args.qbin_stats_json
+            with open(qbin_stats_path, 'r') as f:
+                qbin_stats = json.load(f)
+            logging.info(f"Loaded qbin stats from {qbin_stats_path}")
+        else:
+            qbin_stats = build_quantile_bin_stats(
+                data_dir=args.data_dir,
+                schema_path=schema_path,
+                num_bins=args.qbin_num_bins,
+                sample_size=args.qbin_sample_size,
+                valid_ratio=args.valid_ratio,
+                train_ratio=args.train_ratio,
+                seed=args.seed,
+            )
+            qbin_stats_path = os.path.join(args.ckpt_dir, 'qb_stats.json')
+            with open(qbin_stats_path, 'w') as f:
+                json.dump(qbin_stats, f)
+            logging.info(f"Saved qbin stats to {qbin_stats_path}")
+        args.qbin_stats_json = qbin_stats_path
+    else:
+        args.qbin_num_bins = 0
+        args.qbin_stats_json = None
+
     logging.info("Using Parquet data format (IterableDataset)")
     train_loader, valid_loader, pcvr_dataset = get_pcvr_data(
         data_dir=args.data_dir,
@@ -254,6 +315,7 @@ def main() -> None:
         buffer_batches=args.buffer_batches,
         seed=args.seed,
         seq_max_lens=seq_max_lens,
+        qbin_stats=qbin_stats,
     )
 
     # ---- NS groups ----
@@ -307,6 +369,14 @@ def main() -> None:
         "user_ns_tokens": args.user_ns_tokens,
         "item_ns_tokens": args.item_ns_tokens,
         "ns_summary_mode": args.ns_summary_mode,
+        "use_graph_tower": args.use_graph_tower,
+        "graph_user_buckets": args.graph_user_buckets,
+        "graph_item_buckets": args.graph_item_buckets,
+        "graph_layers": args.graph_layers,
+        "graph_negatives": args.graph_negatives,
+        "graph_alpha": args.graph_alpha,
+        "bpr_weight": args.bpr_weight,
+        "qbin_num_bins": args.qbin_num_bins if args.use_quantile_bins else 0,
     }
 
     model = PCVRHyFormer(**model_args).to(args.device)
@@ -354,6 +424,7 @@ def main() -> None:
         writer=writer,
         schema_path=schema_path,
         ns_groups_path=args.ns_groups_json if args.ns_groups_json and os.path.exists(args.ns_groups_json) else None,
+        qbin_stats_path=qbin_stats_path,
         eval_every_n_steps=args.eval_every_n_steps,
         train_config=vars(args),
     )

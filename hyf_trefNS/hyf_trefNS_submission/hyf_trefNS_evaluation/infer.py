@@ -68,9 +68,9 @@ _FALLBACK_MODEL_CFG = {
     'ns_tokenizer_type': 'rankmixer',
     'user_ns_tokens': 0,
     'item_ns_tokens': 0,
-
     'ns_summary_mode': 'mean',
 }
+
 _FALLBACK_SEQ_MAX_LENS = 'seq_a:256,seq_b:256,seq_c:512,seq_d:512'
 _FALLBACK_BATCH_SIZE = 256
 _FALLBACK_NUM_WORKERS = 16

@@ -68,9 +68,16 @@ _FALLBACK_MODEL_CFG = {
     'ns_tokenizer_type': 'rankmixer',
     'user_ns_tokens': 0,
     'item_ns_tokens': 0,
-
     'ns_summary_mode': 'mean',
+    'use_graph_tower': True,
+    'graph_user_buckets': 262144,
+    'graph_item_buckets': 262144,
+    'graph_layers': 1,
+    'graph_negatives': 10,
+    'graph_alpha': 0.0,
+    'bpr_weight': 0.01,
 }
+
 _FALLBACK_SEQ_MAX_LENS = 'seq_a:256,seq_b:256,seq_c:512,seq_d:512'
 _FALLBACK_BATCH_SIZE = 256
 _FALLBACK_NUM_WORKERS = 16
@@ -231,7 +238,7 @@ def build_model(
         user_ns_groups=user_ns_groups,
         item_ns_groups=item_ns_groups,
         **model_cfg,
-    ).to(device)
+    )
 
     return model
 
@@ -244,7 +251,7 @@ def load_model_state_strict(
     """Strictly load ``state_dict``; any missing/unexpected key fails fast
     with a diagnostic message.
     """
-    state_dict = torch.load(ckpt_path, map_location=device)
+    state_dict = torch.load(ckpt_path, map_location='cpu')
     try:
         model.load_state_dict(state_dict, strict=True)
     except RuntimeError as e:
@@ -254,6 +261,8 @@ def load_model_state_strict(
             "Check that train_config.json in the ckpt dir is present and matches "
             "the training hyperparameters.")
         raise e
+    finally:
+        del state_dict
 
 
 def get_ckpt_path() -> Optional[str]:
@@ -379,6 +388,7 @@ def main() -> None:
         )
     logging.info(f"Loading checkpoint from {ckpt_path}")
     load_model_state_strict(model, ckpt_path, device)
+    model.to(device)
     model.eval()
     logging.info("Model loaded successfully")
 
@@ -399,7 +409,13 @@ def main() -> None:
             model_input = _batch_to_model_input(batch, device)
             user_ids = batch.get('user_id', [])
 
-            logits, _ = model.predict(model_input)
+            logits, _ = model.predict(
+                model_input,
+                graph_user_ids=batch.get('graph_user_ids').to(device, non_blocking=True)
+                if isinstance(batch.get('graph_user_ids'), torch.Tensor) else None,
+                graph_item_ids=batch.get('graph_item_ids').to(device, non_blocking=True)
+                if isinstance(batch.get('graph_item_ids'), torch.Tensor) else None,
+            )
             logits = logits.squeeze(-1)
             probs = torch.sigmoid(logits).cpu().numpy()
             all_probs.extend(probs.tolist())

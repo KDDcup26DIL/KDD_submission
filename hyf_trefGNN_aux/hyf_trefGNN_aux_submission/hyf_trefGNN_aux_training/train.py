@@ -198,6 +198,22 @@ def parse_args() -> argparse.Namespace:
                         help='How to summarize user/item NS tokens before query '
                              'generation: mean = average pooling, attention = '
                              'learned attention pooling')
+    parser.add_argument('--use_graph_tower', action='store_true', default=True,
+                        help='Enable batch-local LightGCN tower and BPR auxiliary loss')
+    parser.add_argument('--no_graph_tower', dest='use_graph_tower', action='store_false',
+                        help='Disable graph tower and use plain HyFormer logits')
+    parser.add_argument('--graph_user_buckets', type=int, default=262144,
+                        help='Hash bucket count for graph user ID embeddings')
+    parser.add_argument('--graph_item_buckets', type=int, default=262144,
+                        help='Hash bucket count for graph item ID embeddings')
+    parser.add_argument('--graph_layers', type=int, default=1,
+                        help='Number of batch-local LightGCN propagation layers')
+    parser.add_argument('--graph_negatives', type=int, default=10,
+                        help='Number of in-batch negative items sampled per positive row for BPR')
+    parser.add_argument('--graph_alpha', type=float, default=0.0,
+                        help='Kept for config compatibility; aux graph mode does not fuse graph score into logits')
+    parser.add_argument('--bpr_weight', type=float, default=0.01,
+                        help='Weight for BPR auxiliary loss')
 
     args = parser.parse_args()
 
@@ -307,6 +323,13 @@ def main() -> None:
         "user_ns_tokens": args.user_ns_tokens,
         "item_ns_tokens": args.item_ns_tokens,
         "ns_summary_mode": args.ns_summary_mode,
+        "use_graph_tower": args.use_graph_tower,
+        "graph_user_buckets": args.graph_user_buckets,
+        "graph_item_buckets": args.graph_item_buckets,
+        "graph_layers": args.graph_layers,
+        "graph_negatives": args.graph_negatives,
+        "graph_alpha": args.graph_alpha,
+        "bpr_weight": args.bpr_weight,
     }
 
     model = PCVRHyFormer(**model_args).to(args.device)

@@ -68,11 +68,19 @@ _FALLBACK_MODEL_CFG = {
     'ns_tokenizer_type': 'rankmixer',
     'user_ns_tokens': 0,
     'item_ns_tokens': 0,
-
     'ns_summary_mode': 'mean',
+    'use_graph_tower': True,
+    'graph_user_buckets': 262144,
+    'graph_item_buckets': 262144,
+    'graph_layers': 1,
+    'graph_negatives': 10,
+    'graph_alpha': 0.0,
+    'bpr_weight': 0.1,
+    'qbin_num_bins': 16,
 }
+
 _FALLBACK_SEQ_MAX_LENS = 'seq_a:256,seq_b:256,seq_c:512,seq_d:512'
-_FALLBACK_BATCH_SIZE = 256
+_FALLBACK_BATCH_SIZE = 128
 _FALLBACK_NUM_WORKERS = 16
 
 
@@ -121,6 +129,27 @@ def load_train_config(model_dir: str) -> Dict[str, Any]:
         f"falling back to hardcoded defaults. "
         f"Shape mismatch may occur if training used non-default hyperparameters.")
     return {}
+
+
+def load_qbin_stats(model_dir: str, train_config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Load training-time qbin stats from the checkpoint directory if enabled."""
+    if not train_config.get('use_quantile_bins', False):
+        return None
+    stats_path = train_config.get('qbin_stats_json')
+    candidates = []
+    if stats_path:
+        candidates.append(os.path.join(model_dir, os.path.basename(stats_path)))
+        candidates.append(stats_path)
+    candidates.append(os.path.join(model_dir, 'qb_stats.json'))
+    for path in candidates:
+        if path and os.path.exists(path):
+            with open(path, 'r') as f:
+                stats = json.load(f)
+            logging.info(f"Loaded qbin stats from {path}")
+            return stats
+    raise FileNotFoundError(
+        "Quantile bins are enabled in train_config, but qb_stats.json was not "
+        f"found under MODEL_OUTPUT_PATH={model_dir!r}.")
 
 
 def resolve_model_cfg(train_config: Dict[str, Any]) -> Dict[str, Any]:
@@ -231,7 +260,7 @@ def build_model(
         user_ns_groups=user_ns_groups,
         item_ns_groups=item_ns_groups,
         **model_cfg,
-    ).to(device)
+    )
 
     return model
 
@@ -244,7 +273,7 @@ def load_model_state_strict(
     """Strictly load ``state_dict``; any missing/unexpected key fails fast
     with a diagnostic message.
     """
-    state_dict = torch.load(ckpt_path, map_location=device)
+    state_dict = torch.load(ckpt_path, map_location='cpu')
     try:
         model.load_state_dict(state_dict, strict=True)
     except RuntimeError as e:
@@ -254,6 +283,8 @@ def load_model_state_strict(
             "Check that train_config.json in the ckpt dir is present and matches "
             "the training hyperparameters.")
         raise e
+    finally:
+        del state_dict
 
 
 def get_ckpt_path() -> Optional[str]:
@@ -301,6 +332,8 @@ def _batch_to_model_input(
         seq_data=seq_data,
         seq_lens=seq_lens,
         seq_time_buckets=seq_time_buckets,
+        user_int_qbins=device_batch.get('user_int_qbins'),
+        item_int_qbins=device_batch.get('item_int_qbins'),
     )
 
 
@@ -323,6 +356,7 @@ def main() -> None:
 
     # ---- Load train_config.json (single source of truth for all hyperparams) ----
     train_config = load_train_config(model_dir)
+    qbin_stats = load_qbin_stats(model_dir, train_config)
 
     # ---- Parse seq_max_lens ----
     sml_str = train_config.get('seq_max_lens', _FALLBACK_SEQ_MAX_LENS)
@@ -341,6 +375,7 @@ def main() -> None:
         shuffle=False,
         buffer_batches=0,
         is_training=False,
+        qbin_stats=qbin_stats,
     )
     total_test_samples = test_dataset.num_rows
     logging.info(f"Total test samples: {total_test_samples}")
@@ -379,6 +414,7 @@ def main() -> None:
         )
     logging.info(f"Loading checkpoint from {ckpt_path}")
     load_model_state_strict(model, ckpt_path, device)
+    model.to(device)
     model.eval()
     logging.info("Model loaded successfully")
 
@@ -399,7 +435,13 @@ def main() -> None:
             model_input = _batch_to_model_input(batch, device)
             user_ids = batch.get('user_id', [])
 
-            logits, _ = model.predict(model_input)
+            logits, _ = model.predict(
+                model_input,
+                graph_user_ids=batch.get('graph_user_ids').to(device, non_blocking=True)
+                if isinstance(batch.get('graph_user_ids'), torch.Tensor) else None,
+                graph_item_ids=batch.get('graph_item_ids').to(device, non_blocking=True)
+                if isinstance(batch.get('graph_item_ids'), torch.Tensor) else None,
+            )
             logits = logits.squeeze(-1)
             probs = torch.sigmoid(logits).cpu().numpy()
             all_probs.extend(probs.tolist())
